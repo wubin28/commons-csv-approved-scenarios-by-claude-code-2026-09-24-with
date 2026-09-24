@@ -198,3 +198,61 @@ A-001,12.50
 按已定规则，解析器创建时应报 `Missing required CSV headers: [currency]`。[决策记录](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) 包含 Q0–Q7 与 A1–A6 结论。`mvn test` 通过：924 次，失败 0、错误 0、跳过 11。
 
 commit：`docs(s1): clarify required header decisions`；tag：`as-s1-clarified`。下一环节：S2，以本次决策为输入制定后续方案。
+
+## S2 · 第 1 轮
+
+### 我
+
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+@/Users/binwu/.codex/RTK.md
+</INSTRUCTIONS><environment_context>
+  <cwd>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-09-24</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。不要 git push；不要修改 /Users/binwu/OOR/katas/commons-csv 和 ../without。
+- 每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## <环节编号> · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 遇到坑：先修复，再往 guide.md「踩坑记录」追加：环节 · 现象 → 原因 → 解决。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag，然后告诉我：commit、tag、mvn test 结果、下一环节。
+
+【本环节：S2 spec + 业务事实（Approved Scenarios）】
+先读 docs/specs/decisions.md 和 dialogs/dialogs.md 里的 S1 部分。本环节不写 src/main 代码，也不写调用新 API 的测试。
+
+1. 写 docs/specs/required-headers.md：问题陈述 / 术语 / API / 规则（编号 R1、R2……）/ 构建期契约（编号 C1、C2……）/ 非目标 / 验收标准。验收标准分两部分：
+   - 7.1 业务事实 → Approved Scenarios 夹具：用业务语言写的场景表（编号 01、02……），覆盖通过、拒绝、功能关闭时与原有行为一致等情况；
+   - 7.2 接口契约 → 普通 JUnit 契约单测：C 系列契约，以及不适合写成业务场景的规则。
+   每条规则都要能追溯到 decisions.md 里的问题编号。
+2. 在 src/test/resources/org/apache/commons/csv/approved/ 下，为 7.1 的每个场景写一份 NN-<英文短语>.approved.md。格式要让产品经理不懂 Java 也能判断对错：
+   - 中文业务标题和一两句业务说明；
+   - 输入：原样的 CSV 内容；
+   - 格式配置：只列与本功能相关的少量键值；
+   - 解析结果：通过时列出实际表头和各条记录；拒绝时列出异常类型和完整消息。
+   所有夹具结构一致，执行器能机械地解析。期望结果必须由你根据 spec 手工推导，不许运行任何代码去得到它。
+3. 写一个汇总生成器：src/test/java/org/apache/commons/csv/ScenarioBookTest.java。它只读取上面这些夹具，生成 docs/business-facts.md，内容包括场景目录、每个场景的业务说明 / 输入 / 配置 / 期望结果，以及每个场景对应的规则编号。它以 JUnit 测试的形式运行：生成内容和仓库里的 docs/business-facts.md 不一致就失败，并写出 docs/business-facts.received.md；环境变量 APPROVE=1 时直接覆盖。这样文档永远不会和夹具脱节。
+4. 用 APPROVE=1 生成第一版 docs/business-facts.md，再跑完整的 mvn test，确认构建通过（新增文件可能触发项目检查，按项目约定处理，并记入踩坑）。
+5. 往 guide.md「1. 业务事实一览」写一段简介，并链接到 docs/business-facts.md。
+6. 提交并打 tag as-s2-spec-draft，然后停下，请我评审：告诉我要看哪几个文件、建议按什么顺序看，以及你最没把握的 3 个地方。
+
+### Agent
+
+先读 S1 决策、对话记录、仓库约定和相关技能说明；再写规格、夹具与汇总测试。完成后跑全量 `mvn test`，提交并打 tag。
+
+S1 已定：校验文件真实首行；显式表头仅在跳过首行时检查；缺列在解析器构造期报错。本轮按既定决定编写评审稿，使用 `using-superpowers`、`brainstorming` 和单测规范；仓库没有现成 wiki，直接核对源码与测试约定。
+
+场景格式定为固定段落加 fenced 内容：标题、说明、规则、原样 CSV、配置、结果。生成器只读取夹具并检查结构，不调用尚未实现的 API。期望结果按 S1 决策手工推导。
+
+16 份夹具和汇总生成器已写入。定向运行 `ScenarioBookTest`：1 次通过，并用 `APPROVE=1` 生成了首版 `docs/business-facts.md`。接下来跑完整 `mvn test`，检查许可证和构建约定。
+
+完整测试已通过：925 次，失败 0、错误 0、跳过 11。漂移检查也已验证：临时改动汇总文档后，生成器写出 `.received.md` 并使测试失败；重新批准后恢复通过。现在补齐对话记录，复测提交状态，再提交并打 tag。
+
+S2 已提交。commit：`docs(s2): define required header scenarios and business facts`；tag：`as-s2-spec-draft`。完整 `mvn test`：925 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。
+
+请按顺序评审：[S1 决策](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) → [S2 规格](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md) → [业务事实汇总](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md) → [原始夹具](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/approved/) → [汇总生成器](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/ScenarioBookTest.java)。
+
+最没把握的 3 点：① 显式映射与真实表头顺序不同但列名齐全时，是否仍只检查存在性；② 场景 07 的带引号空白与 `trim` 的匹配边界；③ 空文件报全部缺列的业务期望。下一环节：你评审通过后，S3 实现 API 与契约测试。
