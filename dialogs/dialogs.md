@@ -476,3 +476,15 @@ A 表五个条件已逐行接到源码入口，并注明新增校验尚无生产
 “验收”指验证每列的**条件和动作**。例如 A2 配置重复必需名 `currency,currency`：7.2 的**构建期契约 C2**规划断言 `Builder#get()` 拒绝；它不同于 C 表的“通过表头校验”分支 C2。A3–A5 对应契约 C3；A1、A6、A7 的业务路径已在 [夹具说明](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md)举例。[decisions.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md:42) 续写 Q13；夹具期望仍为手工推导。
 
 `APPROVE=1` 重生成 `docs/business-facts.md`：diff **+4/−4**，仅场景 01、10、14、15 的业务说明；CSV、配置、路径、期望结果未变。`mvn test`：926 次，失败 0、错误 0、跳过 11。已提交 `docs(s2r): trace A-table conditions to source and acceptance`；未打 tag。未追踪的 `docs/.DS_Store` 未纳入提交。
+
+## S2R · 第 7 轮
+
+### 我
+
+全部通过
+
+### Agent
+
+收到“全部通过”。我会核对当前状态与测试，追加 S2R 第 7 轮对话，然后一次性提交并打 `as-s2-spec-approved` tag。
+
+S2R 已批准。本轮对话已追加至 [dialogs/dialogs.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/dialogs/dialogs.md)。`mvn test`：926 次，失败 0、错误 0、跳过 11。已提交 `docs(s2r): approve required headers spec`；tag `as-s2-spec-approved` 指向该提交。
