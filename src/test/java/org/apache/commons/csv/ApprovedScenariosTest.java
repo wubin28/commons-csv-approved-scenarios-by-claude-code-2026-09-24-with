@@ -63,7 +63,7 @@ class ApprovedScenariosTest {
     void shouldReadInputAndOptionsIfFixtureIsParsed() throws IOException {
         // Arrange
         final Path path = FIXTURES.resolve("01-auto-complete.approved.md");
-        final String source = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        final String source = read(path);
         // Act
         final String input = fenced(source, "## 输入", "csv");
         final Map<String, String> config = options(fenced(source, "## 格式配置", "text"));
@@ -77,7 +77,7 @@ class ApprovedScenariosTest {
     void shouldReadEmptyInputIfFixtureHasEmptyCsvFence() throws IOException {
         // Arrange
         final Path path = FIXTURES.resolve("13-empty-input.approved.md");
-        final String source = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        final String source = read(path);
         // Act
         final String input = fenced(source, "## 输入", "csv");
         // Assert
@@ -87,37 +87,41 @@ class ApprovedScenariosTest {
     @Test
     void shouldWriteReceivedAndFailIfResultDiffers(@TempDir final Path temp) throws IOException {
         // Arrange
-        final Path source = FIXTURES.resolve("02-two-missing.approved.md");
-        final Path approved = temp.resolve(source.getFileName());
-        Files.copy(source, approved);
-        Files.write(approved, new String(Files.readAllBytes(approved), StandardCharsets.UTF_8)
-                .replace("状态：拒绝", "状态：待核对").getBytes(StandardCharsets.UTF_8));
+        final Path approved = changedFixture(temp);
         final Path received = temp.resolve("02-two-missing.received.md");
         // Act
         assertThrows(AssertionFailedError.class, () -> verify(approved, false));
         // Assert
         assertTrue(Files.exists(received));
-        assertTrue(new String(Files.readAllBytes(received), StandardCharsets.UTF_8).contains("状态：拒绝"));
-        assertTrue(new String(Files.readAllBytes(approved), StandardCharsets.UTF_8).contains("状态：待核对"));
+        assertTrue(read(received).contains("状态：拒绝"));
+        assertTrue(read(approved).contains("状态：待核对"));
     }
 
     @Test
     void shouldOverwriteApprovedIfApprovalIsExplicit(@TempDir final Path temp) throws IOException {
         // Arrange
-        final Path source = FIXTURES.resolve("02-two-missing.approved.md");
-        final Path approved = temp.resolve(source.getFileName());
-        Files.copy(source, approved);
-        Files.write(approved, new String(Files.readAllBytes(approved), StandardCharsets.UTF_8)
-                .replace("状态：拒绝", "状态：待核对").getBytes(StandardCharsets.UTF_8));
+        final Path approved = changedFixture(temp);
         // Act
         verify(approved, true);
         // Assert
-        assertTrue(new String(Files.readAllBytes(approved), StandardCharsets.UTF_8).contains("状态：拒绝"));
+        assertTrue(read(approved).contains("状态：拒绝"));
         assertFalse(Files.exists(temp.resolve("02-two-missing.received.md")));
     }
 
+    private static Path changedFixture(final Path temp) throws IOException {
+        final Path source = FIXTURES.resolve("02-two-missing.approved.md");
+        final Path copy = temp.resolve(source.getFileName());
+        Files.copy(source, copy);
+        Files.write(copy, read(copy).replace("状态：拒绝", "状态：待核对").getBytes(StandardCharsets.UTF_8));
+        return copy;
+    }
+
+    private static String read(final Path path) throws IOException {
+        return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+    }
+
     private static void verify(final Path path, final boolean approve) throws IOException {
-        final String approved = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+        final String approved = read(path);
         final String csv = fenced(approved, "## 输入", "csv");
         final Map<String, String> options = options(fenced(approved, "## 格式配置", "text"));
         final CSVFormat format = format(options);

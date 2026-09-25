@@ -599,3 +599,57 @@ S4 完成。commit：`feat(s4): validate required CSV headers against physical i
 `mvn test`：975 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。对比 S3 基线：974 次、失败 26、错误 0、跳过 11；新增 1 个回归用例，失败清零。19 份 approved 夹具通过，无 `.received.md`；spec 和 `.approved.md` 未改。
 
 下一环节：S5，待你指定。
+
+## S5 · 第 1 轮
+
+### 我
+
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+@/Users/binwu/.codex/RTK.md
+</INSTRUCTIONS><environment_context>
+  <cwd>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-09-25</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。不要 git push；不要修改 /Users/binwu/OOR/katas/commons-csv 和 ../without。
+- 每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## <环节编号> · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 遇到坑：先修复，再往 guide.md「踩坑记录」追加：环节 · 现象 → 原因 → 解决。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag，然后告诉我：commit、tag、mvn test 结果、下一环节。
+
+【本环节：S5 重构】
+先看 git diff as-s0-baseline..HEAD。
+1. 在不改变行为的前提下，重构生产代码、执行器、契约单测和汇总生成器：消除重复、改善命名、和项目风格对齐。每一步小改完都跑一次新增的三个测试类。
+2. 不许修改任何 .approved.md，也不许修改 docs/business-facts.md 的内容（生成器重构后，输出必须逐字不变）。
+3. 最后跑完整的 mvn test，结果必须和 S4 一致。在 dialogs 里列出你做了哪几项重构、各自的理由。提交并打 tag as-s5-refactor。
+
+### Agent
+
+先核对 S0→HEAD 差异、S4 测试基线和仓库约束。随后分小步重构；每步跑新增的三个测试类。
+
+按现有流程视为有界重构。目标：行为与生成文档逐字不变；每次小改后跑指定测试。用 `superpowers` 的重构与完成前验证流程检查结果。
+
+S4 基线为 975 次、失败 0、错误 0、跳过 11。已定位重复点：构建期表头集合、解析期重复列报错、执行器夹具读写、契约测试构造、汇总器编号。逐项改，逐项测。
+
+前三步重构已完成：表头集合创建、重复列报错、执行器临时夹具准备。每步后均跑了三个目标测试类；接着整理契约测试与汇总生成器。
+
+五项重构已完成；三个目标测试类逐步复测。现跑完整 `mvn test`，再核对 975/0/0/11、文档哈希、受保护文件差异与工作区。
+
+全量测试统计与 S4 一致：975 次、失败 0、错误 0、跳过 11。`business-facts.md` 哈希未变；受保护文件无差异；无 `.received.md`。先写入本轮对话和重构理由，再做最终构建检查、提交并打 tag。
+
+S5 完成。commit：`refactor(s5): simplify required header validation and scenario tests`；tag：`as-s5-refactor`。
+
+重构与理由：
+
+- `CSVFormat`：提取大小写感知集合创建，消除构建校验重复。
+- `CSVParser`：共用重复表头校验，统一异常文本。
+- `ApprovedScenariosTest`：复用 UTF-8 读取与临时差异夹具，删去执行器自检重复。
+- `RequiredHeadersContractTest`：抽取自动表头格式构造，压缩重复设置；`StringReader` 改正常导入。
+- `ScenarioBookTest`：每场景只格式化一次编号，复用目录与章节锚点。
+
+每步后运行三个目标测试类；最终 `mvn test`：975 次，失败 0、错误 0、跳过 11（与 S4 一致）。`.approved.md` 和 `docs/business-facts.md` 未改；无 `.received.md`。下一环节：待你指定。

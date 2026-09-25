@@ -2637,6 +2637,10 @@ public final class CSVFormat implements Serializable {
      *
      * @throws IllegalArgumentException Throw when any attribute is invalid or inconsistent with other attributes.
      */
+    private Set<String> createRequiredHeaderNameSet() {
+        return ignoreHeaderCase ? new TreeSet<>(String.CASE_INSENSITIVE_ORDER) : new HashSet<>();
+    }
+
     private void validate() throws IllegalArgumentException {
         if (quoteCharacter != null && contains(delimiter, quoteCharacter.charValue())) { // Explicit (un)boxing is intentional
             throw new IllegalArgumentException("The quoteChar character and the delimiter cannot be the same ('" + quoteCharacter + "')");
@@ -2672,7 +2676,7 @@ public final class CSVFormat implements Serializable {
             }
         }
         if (requiredHeaders != null && requiredHeaders.length > 0) {
-            final Set<String> names = ignoreHeaderCase ? new TreeSet<>(String.CASE_INSENSITIVE_ORDER) : new HashSet<>();
+            final Set<String> names = createRequiredHeaderNameSet();
             for (final String name : requiredHeaders) {
                 if (isBlank(name) || !names.add(name)) {
                     throw new IllegalArgumentException("Required CSV headers must have distinct nonblank names");
@@ -2685,7 +2689,7 @@ public final class CSVFormat implements Serializable {
                 if (!skipHeaderRecord) {
                     throw new IllegalArgumentException("Required CSV headers need the physical header record to be skipped");
                 }
-                final Set<String> mapped = ignoreHeaderCase ? new TreeSet<>(String.CASE_INSENSITIVE_ORDER) : new HashSet<>();
+                final Set<String> mapped = createRequiredHeaderNameSet();
                 for (final String header : headers) {
                     if (header != null) {
                         mapped.add(header);

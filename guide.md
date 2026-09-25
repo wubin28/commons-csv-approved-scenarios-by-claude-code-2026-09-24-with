@@ -59,6 +59,8 @@
 - 环节 S4 显式映射 · 忽略表头大小写且显式映射含可选 `null` 名称时，构建格式抛 `NullPointerException` → 新增 `TreeSet` 映射校验直接加入了 `null` → 跳过空映射名，只核对必需名；新增回归单测确认可解析。
 - 环节 S4 检索与构建入口 · `rg --files` 被代理成 grep，直接执行 Maven 只返回 `context-mode: Build tool redirected.` → 当前环境对这两个命令分别设有代理与构建拦截 → 用 `rtk proxy rg` 搜索、经 `ctx_execute` 执行完整 Maven 测试。
 - 环节 S4 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱对 `.git` 仅开放读取 → 按授权流程提升本仓库 `git add` 权限，成功暂存。
+- 环节 S5 契约测试补丁 · 一次跨多处修改的补丁因末尾上下文不匹配而未应用 → 补丁覆盖范围过大，定位不够精确 → 拆成小补丁逐处应用，并重跑三个目标测试类确认通过。
+- 环节 S5 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱仍只允许读取 `.git` → 按授权流程提升本仓库 `git add` 权限，成功暂存。
 
 # 5. 与 without 对照
 
@@ -69,3 +71,4 @@
 - S0 克隆与基线：`as-s0-baseline`。
 - S3 Approved Scenarios 红态：`as-s3-red`；下一环节实现必需列表头行为。
 - S4 Approved Scenarios 绿态：`as-s4-green`；下一环节 S5 待指定。
+- S5 行为保持重构：`as-s5-refactor`；完整 `mvn test` 与 S4 一致，975 次、失败 0、错误 0、跳过 11。

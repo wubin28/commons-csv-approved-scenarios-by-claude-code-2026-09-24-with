@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.stream.Stream;
 
@@ -39,7 +40,7 @@ class RequiredHeadersContractTest {
         // Arrange
         final CSVFormat format = CSVFormat.DEFAULT.builder().setHeader().get();
         // Act
-        try (CSVParser parser = format.parse(new java.io.StringReader("account_id\nA-001\n"))) {
+        try (CSVParser parser = format.parse(new StringReader("account_id\nA-001\n"))) {
             // Assert
             assertEquals(1, parser.getRecords().size());
         }
@@ -175,7 +176,7 @@ class RequiredHeadersContractTest {
     void shouldCopyRequiredNamesIfInputArrayChanges() {
         // Arrange
         final String[] names = {"currency"};
-        final CSVFormat format = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders(names).get();
+        final CSVFormat format = autoHeaderFormat(names);
         // Act
         names[0] = "amount";
         // Assert
@@ -185,7 +186,7 @@ class RequiredHeadersContractTest {
     @Test
     void shouldPreserveRequiredNamesIfFormatIsCopiedOrRebuilt() {
         // Arrange
-        final CSVFormat original = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency").get();
+        final CSVFormat original = autoHeaderFormat("currency");
         // Act
         final CSVFormat copied = original.copy();
         final CSVFormat rebuilt = original.builder().get();
@@ -197,9 +198,9 @@ class RequiredHeadersContractTest {
     @Test
     void shouldKeepValueSemanticsIfRequiredNamesMatch() {
         // Arrange
-        final CSVFormat first = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency", "amount").get();
+        final CSVFormat first = autoHeaderFormat("currency", "amount");
         // Act
-        final CSVFormat second = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency", "amount").get();
+        final CSVFormat second = autoHeaderFormat("currency", "amount");
         // Assert
         assertEquals(first, second);
         assertEquals(first.hashCode(), second.hashCode());
@@ -208,11 +209,11 @@ class RequiredHeadersContractTest {
     @Test
     void shouldChangeEqualityIfRequiredNamesChangeOrReorder() {
         // Arrange
-        final CSVFormat first = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency", "amount").get();
+        final CSVFormat first = autoHeaderFormat("currency", "amount");
         // Act
-        final CSVFormat removed = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency").get();
-        final CSVFormat added = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency", "amount", "account_id").get();
-        final CSVFormat reordered = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("amount", "currency").get();
+        final CSVFormat removed = autoHeaderFormat("currency");
+        final CSVFormat added = autoHeaderFormat("currency", "amount", "account_id");
+        final CSVFormat reordered = autoHeaderFormat("amount", "currency");
         // Assert
         assertFalse(first.equals(removed));
         assertFalse(first.equals(added));
@@ -222,7 +223,7 @@ class RequiredHeadersContractTest {
     @Test
     void shouldShowRequiredNamesInOrderIfFormatIsRendered() {
         // Arrange
-        final CSVFormat format = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency", "amount").get();
+        final CSVFormat format = autoHeaderFormat("currency", "amount");
         // Act
         final String description = format.toString();
         // Assert
@@ -244,7 +245,7 @@ class RequiredHeadersContractTest {
     @Test
     void shouldAcceptEmptyAndShortDataIfRequiredHeaderExists() throws IOException {
         // Arrange
-        final CSVFormat format = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency").get();
+        final CSVFormat format = autoHeaderFormat("currency");
         // Act
         try (CSVParser parser = CSVParser.parse("account_id,currency\nA-001,\nA-002\n", format)) {
             // Assert
@@ -255,7 +256,7 @@ class RequiredHeadersContractTest {
     @Test
     void shouldAllowPrintingIfRequiredHeadersAreConfigured() throws IOException {
         // Arrange
-        final CSVFormat format = CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders("currency").get();
+        final CSVFormat format = autoHeaderFormat("currency");
         final StringWriter output = new StringWriter();
         // Act
         try (CSVPrinter printer = format.print(output)) {
@@ -263,5 +264,9 @@ class RequiredHeadersContractTest {
         }
         // Assert
         assertTrue(output.toString().contains("A-001,TWD"));
+    }
+
+    private static CSVFormat autoHeaderFormat(final String... requiredHeaders) {
+        return CSVFormat.DEFAULT.builder().setHeader().setRequiredHeaders(requiredHeaders).get();
     }
 }

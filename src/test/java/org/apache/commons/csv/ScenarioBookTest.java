@@ -78,7 +78,8 @@ class ScenarioBookTest {
         int number = 1;
         for (final Path file : files) {
             final String name = file.getFileName().toString();
-            assertTrue(name.matches(String.format("%02d-[a-z0-9-]+\\.approved\\.md", Integer.valueOf(number))), name);
+            final String scenarioId = String.format("%02d", Integer.valueOf(number));
+            assertTrue(name.matches(scenarioId + "-[a-z0-9-]+\\.approved\\.md"), name);
             final String fixture = read(file);
             final Matcher match = SCENARIO.matcher(fixture);
             assertTrue(match.matches(), "Invalid Approved Scenario structure: " + name);
@@ -93,10 +94,10 @@ class ScenarioBookTest {
             assertTrue(config.contains("header:"), name);
             assertTrue(result.startsWith("状态：通过\n实际表头：") && result.contains("\n记录：\n")
                     || result.startsWith("状态：拒绝\n异常类型：") && result.contains("\n完整消息："), name);
-            toc.append("| ").append(String.format("%02d", Integer.valueOf(number))).append(" | [").append(title).append("](#scenario-")
-                    .append(String.format("%02d", Integer.valueOf(number))).append(") | ").append(rules).append(" | ").append(path).append(" |\n");
-            chapters.append("## <a id=\"scenario-").append(String.format("%02d", Integer.valueOf(number))).append("\"></a>")
-                    .append(String.format("%02d", Integer.valueOf(number))).append(" · ").append(title).append("\n\n")
+            toc.append("| ").append(scenarioId).append(" | [").append(title).append("](#scenario-")
+                    .append(scenarioId).append(") | ").append(rules).append(" | ").append(path).append(" |\n");
+            chapters.append("## <a id=\"scenario-").append(scenarioId).append("\"></a>")
+                    .append(scenarioId).append(" · ").append(title).append("\n\n")
                     .append("业务说明：").append(description).append("\n\n")
                     .append("对应规则：").append(rules).append("\n\n")
                     .append("判定路径：").append(path).append("\n\n")
