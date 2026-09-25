@@ -55,6 +55,10 @@
 - 环节 S3 构建入口 · `context-mode: Build tool redirected.` → shell 中的 Maven 命令被上下文模式拦截，未执行测试 → 改用 `ctx_execute` 执行，确认 Surefire 输出 44 个用例、失败 26、错误 0。
 - 环节 S3 空输入夹具 · 场景 13、19 的 received 把后续 Markdown 标题当作 CSV → 空代码围栏的结束标记紧贴内容起点，原提取器只查找前置换行的结束围栏 → 显式处理空围栏，增加独立自检并重跑两类测试。
 - 环节 S3 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱默认只读 `.git`，无法写索引 → 按授权流程提升本仓库 `git add` 权限后暂存成功。
+- 环节 S4 执行器自检 · 必需列功能实现后，`ApprovedScenariosTest` 的两项自检失败 → S3 自检把场景 02 实际状态固定假定为“通过”，生产代码转绿后该假定失效 → 只在临时目录把期望状态改为“待核对”制造差异，再断言 received 与显式批准分支均还原真实“拒绝”结果；源 `.approved.md` 未改。
+- 环节 S4 显式映射 · 忽略表头大小写且显式映射含可选 `null` 名称时，构建格式抛 `NullPointerException` → 新增 `TreeSet` 映射校验直接加入了 `null` → 跳过空映射名，只核对必需名；新增回归单测确认可解析。
+- 环节 S4 检索与构建入口 · `rg --files` 被代理成 grep，直接执行 Maven 只返回 `context-mode: Build tool redirected.` → 当前环境对这两个命令分别设有代理与构建拦截 → 用 `rtk proxy rg` 搜索、经 `ctx_execute` 执行完整 Maven 测试。
+- 环节 S4 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱对 `.git` 仅开放读取 → 按授权流程提升本仓库 `git add` 权限，成功暂存。
 
 # 5. 与 without 对照
 
@@ -64,3 +68,4 @@
 
 - S0 克隆与基线：`as-s0-baseline`。
 - S3 Approved Scenarios 红态：`as-s3-red`；下一环节实现必需列表头行为。
+- S4 Approved Scenarios 绿态：`as-s4-green`；下一环节 S5 待指定。

@@ -90,13 +90,15 @@ class ApprovedScenariosTest {
         final Path source = FIXTURES.resolve("02-two-missing.approved.md");
         final Path approved = temp.resolve(source.getFileName());
         Files.copy(source, approved);
+        Files.write(approved, new String(Files.readAllBytes(approved), StandardCharsets.UTF_8)
+                .replace("状态：拒绝", "状态：待核对").getBytes(StandardCharsets.UTF_8));
         final Path received = temp.resolve("02-two-missing.received.md");
         // Act
         assertThrows(AssertionFailedError.class, () -> verify(approved, false));
         // Assert
         assertTrue(Files.exists(received));
-        assertTrue(new String(Files.readAllBytes(received), StandardCharsets.UTF_8).contains("状态：通过"));
-        assertTrue(new String(Files.readAllBytes(approved), StandardCharsets.UTF_8).contains("状态：拒绝"));
+        assertTrue(new String(Files.readAllBytes(received), StandardCharsets.UTF_8).contains("状态：拒绝"));
+        assertTrue(new String(Files.readAllBytes(approved), StandardCharsets.UTF_8).contains("状态：待核对"));
     }
 
     @Test
@@ -105,10 +107,12 @@ class ApprovedScenariosTest {
         final Path source = FIXTURES.resolve("02-two-missing.approved.md");
         final Path approved = temp.resolve(source.getFileName());
         Files.copy(source, approved);
+        Files.write(approved, new String(Files.readAllBytes(approved), StandardCharsets.UTF_8)
+                .replace("状态：拒绝", "状态：待核对").getBytes(StandardCharsets.UTF_8));
         // Act
         verify(approved, true);
         // Assert
-        assertTrue(new String(Files.readAllBytes(approved), StandardCharsets.UTF_8).contains("状态：通过"));
+        assertTrue(new String(Files.readAllBytes(approved), StandardCharsets.UTF_8).contains("状态：拒绝"));
         assertFalse(Files.exists(temp.resolve("02-two-missing.received.md")));
     }
 

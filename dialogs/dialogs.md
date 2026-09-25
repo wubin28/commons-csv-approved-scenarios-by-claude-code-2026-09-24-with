@@ -549,3 +549,53 @@ S3 红态已建立。`commit: test(s3): add approved scenario red tests`；`tag:
 - 执行器自检 4/4 通过：非空与空输入解析、差异写 received 并失败、批准分支在临时目录覆盖 approved；未用 `APPROVE=1` 改动源夹具。目标测试 48 个用例：失败 26、错误 0。全量 `mvn test`：974 个用例，失败 26、错误 0、跳过 11；旧 926 个无失败。
 
 文件：[ApprovedScenariosTest.java](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/ApprovedScenariosTest.java)、[RequiredHeadersContractTest.java](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/RequiredHeadersContractTest.java)、[guide.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/guide.md)。下一环节：实现必需列表头行为，使红态转绿。
+
+## S4 · 第 1 轮
+
+### 我
+
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+@/Users/binwu/.codex/RTK.md
+</INSTRUCTIONS><environment_context>
+  <cwd>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-09-25</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。不要 git push；不要修改 /Users/binwu/OOR/katas/commons-csv 和 ../without。
+- 每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## <环节编号> · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 遇到坑：先修复，再往 guide.md「踩坑记录」追加：环节 · 现象 → 原因 → 解决。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag，然后告诉我：commit、tag、mvn test 结果、下一环节。
+
+【本环节：S4（Approved Scenarios 绿）】
+1. 按 docs/specs/required-headers.md 在 src/main 里实现功能，直到 ApprovedScenariosTest 和 RequiredHeadersContractTest 全部通过。
+2. 铁律：不许用 APPROVE=1、也不许手改 .approved.md 来让测试变绿。如果你确信某份夹具的期望和 spec 矛盾，停下来，把 received 和 approved 的 diff 贴给我，由我决定；得到我的明确同意后才能改，并把这个决定续写进 docs/specs/decisions.md。
+3. 跑完整的 mvn test，直到本项目原有的所有检查都通过；遇到的每个坑都修好并记入 guide.md。
+4. 清理残留的 .received.md。提交并打 tag as-s4-green，body 写上全量测试数字，并和基线对比。
+
+### Agent
+
+先读仓库规则、规格和测试基线，再改 `src/main`。会保留所有 `.approved.md` 原样，记录踩坑，跑完整测试，最后提交并打 `as-s4-green`。
+
+按现有规格执行，范围限于本仓库。先核对夹具、实现和基线结果；若发现期望与规格冲突，会停在对应 diff 等你决定。
+
+基线确认：`mvn test` 共 974 个用例，26 失败、0 错误、11 跳过；失败都在目标测试。实现将分两处：`CSVFormat` 构建期校验配置，`CSVParser` 构造期核对真实表头。
+
+19 份业务夹具和契约断言已转绿；剩下 2 个失败来自 S3 执行器自检：自检假定场景 02 实际会“通过”，功能实现后该假定失效。先改成临时夹具的人造差异，再复测并记坑。
+
+目标测试 48/48 通过；源 `.approved.md` 未改。现跑完整 `mvn test`，检查项目原有测试和构建检查。
+
+全量测试曾到 974/974，通过后又查出显式映射含可选 `null` 名称时会抛 `NullPointerException`。回归用例先复现、再验证修复通过；现重跑全量测试。
+
+全量 `mvn test` 已通过：975 次、失败 0、错误 0、跳过 11。检查未见 `.received.md`；spec 与 approved 夹具也无改动。现在写入本轮对话，随后一次提交并打 tag。
+
+S4 完成。commit：`feat(s4): validate required CSV headers against physical input`；tag：`as-s4-green`。
+
+`mvn test`：975 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。对比 S3 基线：974 次、失败 26、错误 0、跳过 11；新增 1 个回归用例，失败清零。19 份 approved 夹具通过，无 `.received.md`；spec 和 `.approved.md` 未改。
+
+下一环节：S5，待你指定。

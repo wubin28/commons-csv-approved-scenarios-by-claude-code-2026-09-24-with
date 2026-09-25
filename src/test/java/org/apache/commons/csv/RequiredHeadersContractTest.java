@@ -159,6 +159,19 @@ class RequiredHeadersContractTest {
     }
 
     @Test
+    void shouldAllowMissingOptionalExplicitNameIfRequiredNameIsMapped() throws IOException {
+        // Arrange
+        final CSVFormat.Builder builder = CSVFormat.DEFAULT.builder().setHeader((String) null, "currency")
+                .setAllowMissingColumnNames(true).setSkipHeaderRecord(true).setIgnoreHeaderCase(true).setRequiredHeaders("currency");
+        // Act
+        final CSVFormat format = builder.get();
+        // Assert
+        try (CSVParser parser = CSVParser.parse(",currency\n,TWD\n", format)) {
+            assertEquals(1, parser.getRecords().size());
+        }
+    }
+
+    @Test
     void shouldCopyRequiredNamesIfInputArrayChanges() {
         // Arrange
         final String[] names = {"currency"};

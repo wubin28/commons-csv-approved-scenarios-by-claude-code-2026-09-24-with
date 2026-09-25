@@ -605,17 +605,20 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
         if (formatHeader != null) {
             headerMap = createEmptyHeaderMap();
             String[] headerRecord = null;
+            String[] physicalHeader = null;
             if (formatHeader.length == 0) {
                 // read the header from the first line of the file
                 final CSVRecord nextRecord = nextRecord();
                 if (nextRecord != null) {
                     headerRecord = nextRecord.values();
+                    physicalHeader = headerRecord;
                     headerComment = nextRecord.getComment();
                 }
             } else {
                 if (format.getSkipHeaderRecord()) {
                     final CSVRecord nextRecord = nextRecord();
                     if (nextRecord != null) {
+                        physicalHeader = nextRecord.values();
                         headerComment = nextRecord.getComment();
                     }
                 }
@@ -650,9 +653,48 @@ public final class CSVParser implements Iterable<CSVRecord>, Closeable {
                     }
                 }
             }
+            validateRequiredHeaders(physicalHeader, formatHeader.length > 0);
         }
         // Make header names Collection immutable
         return new Headers(headerMap, headerNames == null ? Collections.emptyList() : Collections.unmodifiableList(headerNames));
+    }
+
+    private void validateRequiredHeaders(final String[] physicalHeader, final boolean explicitHeader) {
+        final String[] required = format.getRequiredHeaders();
+        if (required == null || required.length == 0) {
+            return;
+        }
+        final Map<String, Integer> physicalNames = createEmptyHeaderMap();
+        if (physicalHeader != null) {
+            boolean observedMissing = false;
+            for (int i = 0; i < physicalHeader.length; i++) {
+                final String header = physicalHeader[i];
+                final boolean blank = CSVFormat.isBlank(header);
+                if (explicitHeader && blank && !format.getAllowMissingColumnNames()) {
+                    throw new IllegalArgumentException("A header name is missing in " + Arrays.toString(physicalHeader));
+                }
+                final boolean duplicate = blank ? observedMissing : physicalNames.containsKey(header);
+                final DuplicateHeaderMode mode = format.getDuplicateHeaderMode();
+                if (explicitHeader && duplicate && mode != DuplicateHeaderMode.ALLOW_ALL && !(blank && mode == DuplicateHeaderMode.ALLOW_EMPTY)) {
+                    throw new IllegalArgumentException(String.format(
+                            "The header contains a duplicate name: \"%s\" in %s. If this is valid then use CSVFormat.Builder.setDuplicateHeaderMode().",
+                            header, Arrays.toString(physicalHeader)));
+                }
+                observedMissing |= blank;
+                if (header != null) {
+                    physicalNames.put(header, Integer.valueOf(i));
+                }
+            }
+        }
+        final List<String> missing = new ArrayList<>();
+        for (final String name : required) {
+            if (!physicalNames.containsKey(name)) {
+                missing.add(name);
+            }
+        }
+        if (!missing.isEmpty()) {
+            throw new IllegalArgumentException("Missing required CSV headers: " + missing);
+        }
     }
 
     /**

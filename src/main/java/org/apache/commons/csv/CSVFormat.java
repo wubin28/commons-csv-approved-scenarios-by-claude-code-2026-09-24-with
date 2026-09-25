@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 
 import org.apache.commons.codec.binary.Base64OutputStream;
@@ -245,6 +246,8 @@ public final class CSVFormat implements Serializable {
 
         private String[] headers;
 
+        private String[] requiredHeaders;
+
         private boolean ignoreEmptyLines;
 
         private boolean ignoreHeaderCase;
@@ -287,6 +290,7 @@ public final class CSVFormat implements Serializable {
             this.escapeCharacter = csvFormat.escapeCharacter;
             this.headerComments = csvFormat.headerComments;
             this.headers = csvFormat.headers;
+            this.requiredHeaders = CSVFormat.clone(csvFormat.requiredHeaders);
             this.ignoreEmptyLines = csvFormat.ignoreEmptyLines;
             this.ignoreHeaderCase = csvFormat.ignoreHeaderCase;
             this.ignoreSurroundingSpaces = csvFormat.ignoreSurroundingSpaces;
@@ -630,7 +634,7 @@ public final class CSVFormat implements Serializable {
          * @return this builder
          */
         public Builder setRequiredHeaders(final String... names) {
-            // Signature-only S3 stub. Validation and storage belong to the implementation stage.
+            this.requiredHeaders = CSVFormat.clone(names);
             return this;
         }
 
@@ -1579,6 +1583,9 @@ public final class CSVFormat implements Serializable {
     /** Array of header column names. */
     private final String[] headers;
 
+    /** Names that must occur in the physical input header. */
+    private final String[] requiredHeaders;
+
     /** Array of header comment lines. */
     private final String[] headerComments;
 
@@ -1633,6 +1640,7 @@ public final class CSVFormat implements Serializable {
         this.escapeCharacter = builder.escapeCharacter;
         this.headerComments = builder.headerComments;
         this.headers = builder.headers;
+        this.requiredHeaders = CSVFormat.clone(builder.requiredHeaders);
         this.ignoreEmptyLines = builder.ignoreEmptyLines;
         this.ignoreHeaderCase = builder.ignoreHeaderCase;
         this.ignoreSurroundingSpaces = builder.ignoreSurroundingSpaces;
@@ -1700,6 +1708,7 @@ public final class CSVFormat implements Serializable {
                 Objects.equals(commentMarker, other.commentMarker) && Objects.equals(delimiter, other.delimiter) &&
                 duplicateHeaderMode == other.duplicateHeaderMode && Objects.equals(escapeCharacter, other.escapeCharacter) &&
                 Arrays.equals(headerComments, other.headerComments) && Arrays.equals(headers, other.headers) &&
+                Arrays.equals(requiredHeaders, other.requiredHeaders) &&
                 ignoreEmptyLines == other.ignoreEmptyLines && ignoreHeaderCase == other.ignoreHeaderCase &&
                 ignoreSurroundingSpaces == other.ignoreSurroundingSpaces && lenientEof == other.lenientEof &&
                 Objects.equals(nullString, other.nullString) && Objects.equals(quoteCharacter, other.quoteCharacter) &&
@@ -1866,6 +1875,15 @@ public final class CSVFormat implements Serializable {
      */
     public String[] getHeader() {
         return headers != null ? headers.clone() : null;
+    }
+
+    /**
+     * Gets a copy of the required physical header names.
+     *
+     * @return required header names, or {@code null} if never configured.
+     */
+    public String[] getRequiredHeaders() {
+        return clone(requiredHeaders);
     }
 
     /**
@@ -2040,6 +2058,7 @@ public final class CSVFormat implements Serializable {
         int result = 1;
         result = prime * result + Arrays.hashCode(headerComments);
         result = prime * result + Arrays.hashCode(headers);
+        result = prime * result + Arrays.hashCode(requiredHeaders);
         return prime * result + Objects.hash(allowMissingColumnNames, autoFlush, commentMarker, delimiter, duplicateHeaderMode, escapeCharacter,
                 ignoreEmptyLines, ignoreHeaderCase, ignoreSurroundingSpaces, lenientEof, nullString, quoteCharacter, quoteMode, quotedNullString,
                 recordSeparator, skipHeaderRecord, trailingData, trailingDelimiter, trim);
@@ -2590,6 +2609,10 @@ public final class CSVFormat implements Serializable {
             sb.append(Constants.SP);
             sb.append("Header:").append(Arrays.toString(headers));
         }
+        if (requiredHeaders != null && requiredHeaders.length > 0) {
+            sb.append(Constants.SP);
+            sb.append("RequiredHeaders:").append(Arrays.toString(requiredHeaders));
+        }
         return sb.toString();
     }
 
@@ -2645,6 +2668,31 @@ public final class CSVFormat implements Serializable {
                     throw new IllegalArgumentException(String.format(
                             "The header contains a duplicate name: \"%s\" in %s. If this is valid then use CSVFormat.Builder.setDuplicateHeaderMode().", header,
                             Arrays.toString(headers)));
+                }
+            }
+        }
+        if (requiredHeaders != null && requiredHeaders.length > 0) {
+            final Set<String> names = ignoreHeaderCase ? new TreeSet<>(String.CASE_INSENSITIVE_ORDER) : new HashSet<>();
+            for (final String name : requiredHeaders) {
+                if (isBlank(name) || !names.add(name)) {
+                    throw new IllegalArgumentException("Required CSV headers must have distinct nonblank names");
+                }
+            }
+            if (headers == null) {
+                throw new IllegalArgumentException("Required CSV headers need a header mode");
+            }
+            if (headers.length > 0) {
+                if (!skipHeaderRecord) {
+                    throw new IllegalArgumentException("Required CSV headers need the physical header record to be skipped");
+                }
+                final Set<String> mapped = ignoreHeaderCase ? new TreeSet<>(String.CASE_INSENSITIVE_ORDER) : new HashSet<>();
+                for (final String header : headers) {
+                    if (header != null) {
+                        mapped.add(header);
+                    }
+                }
+                if (!mapped.containsAll(names)) {
+                    throw new IllegalArgumentException("Explicit CSV headers must contain every required name");
                 }
             }
         }
