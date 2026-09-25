@@ -295,3 +295,36 @@ S2R 修改已提交，未打 tag。commit：`docs(s2r): trace acceptance criteri
 `docs/business-facts.md` diff：新增 61 行、删除 0 行；目录从 16 增至 18 个场景，新增“只有注释，没有表头”和“重复空列名可接受”，原 16 个场景未变。
 
 请评审：[验收推导表](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md) → [Q8 决定](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) → [业务事实](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md)及[新增夹具](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/approved/)。下一步：等你继续评审。
+
+## S2R · 第 2 轮
+
+### 我
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## S2R · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag。
+
+【本环节：S2R 评审意见】
+下面是我的评审意见：
+<逐条写：文件/场景编号 → 问题 → 期望的改法；没有意见就写"全部通过">
+
+请参考decision table的格式（参见 @/Users/binwu/OOR/remote-vault-on-mac-mini-4/my-knowledge-base/decision-table-testing/raw/Decision-table.md）改进spec文档 @docs/specs/required-headers.md 里的“验收条件推导表”，以便让我更加容易地看到“推导顺序：先判功能是否启用；启用后判配置能否构建；可构建时判真实表头来源和是否存在；再判现有表头策略、列名匹配及缺列；最后检查格式对象契约和明确的非目标。”。
+
+请：
+1. 逐条落实到 spec、夹具、decisions.md（新决定按问题编号续写）；夹具里的期望结果仍然手工推导。
+2. 用 APPROVE=1 重新生成 docs/business-facts.md，并把它的 diff 摘要给我看。
+3. 如果我写的是"全部通过"：提交并打 tag as-s2-spec-approved。否则提交修改（不打 tag），然后停下等我下一轮评审。
+
+### Agent
+
+先读你指定的 Decision-table.md，核对当前验收表与 18 份夹具。随后把判定顺序改成可逐行阅读的决策表；检查是否需要调整场景、Q9 记录和生成文档。本轮有修改，提交后不打 tag。
+
+参考文件用“条件作行、规则作列、动作作行”，并用“—”表示该条件无关。当前表把条件与结论写在同一格，判定次序难读。我会改成串接的构建期、表头来源、匹配结果决策表，并在夹具中标注经过的路径。
+
+决策表已串成 A→B→C 三段，19 份夹具现在各有判定路径。新增场景 19 覆盖“显式表头、跳过首行、空文件”分支；期望异常按 Q3/Q4 手工推导。重生成文档的 diff：新增 87 行、删除 21 行，主要是目录列、18 条路径和新场景。
+
+S2R 修改已提交，未打 tag。commit：`docs(s2r): present acceptance gates as decision tables`。`mvn test`：925 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。
+
+`docs/business-facts.md` diff：新增 87 行、删除 21 行；目录新增“判定路径”列，原 18 个场景新增 A/B/C 路径，并新增场景 19“显式表头遇到空文件”。原 18 个场景的 CSV 输入、配置和期望结果未变。
+
+请评审：[A/B/C 决策表](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md)、[Q9 决定](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md)、[场景 19](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/approved/19-explicit-empty-input.approved.md)。下一步：等你继续评审。

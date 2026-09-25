@@ -55,6 +55,7 @@ class ScenarioBookTest {
             + "-->\n";
 
     private static final Pattern SCENARIO = Pattern.compile("(?s).*?\\n# ([^\\n]+)\\n\\n说明：([^\\n]+)\\n规则：(R\\d+(?:、R\\d+)*)"
+            + "\\n路径：(A\\d+(?: → B\\d+)?(?: → C\\d+)?)"
             + "\\n\\n## 输入\\n```csv\\n(.*?)```\\n\\n## 格式配置\\n```text\\n(.*?)```\\n\\n## 解析结果\\n```text\\n(.*?)```\\n*");
 
     @Test
@@ -84,19 +85,21 @@ class ScenarioBookTest {
             final String title = match.group(1);
             final String description = match.group(2);
             final String rules = match.group(3);
-            final String input = match.group(4);
-            final String config = match.group(5);
-            final String result = match.group(6);
+            final String path = match.group(4);
+            final String input = match.group(5);
+            final String config = match.group(6);
+            final String result = match.group(7);
             assertTrue(config.contains("requiredHeaders:"), name);
             assertTrue(config.contains("header:"), name);
             assertTrue(result.startsWith("状态：通过\n实际表头：") && result.contains("\n记录：\n")
                     || result.startsWith("状态：拒绝\n异常类型：") && result.contains("\n完整消息："), name);
             toc.append("| ").append(String.format("%02d", Integer.valueOf(number))).append(" | [").append(title).append("](#scenario-")
-                    .append(String.format("%02d", Integer.valueOf(number))).append(") | ").append(rules).append(" |\n");
+                    .append(String.format("%02d", Integer.valueOf(number))).append(") | ").append(rules).append(" | ").append(path).append(" |\n");
             chapters.append("## <a id=\"scenario-").append(String.format("%02d", Integer.valueOf(number))).append("\"></a>")
                     .append(String.format("%02d", Integer.valueOf(number))).append(" · ").append(title).append("\n\n")
                     .append("业务说明：").append(description).append("\n\n")
                     .append("对应规则：").append(rules).append("\n\n")
+                    .append("判定路径：").append(path).append("\n\n")
                     .append("输入（原样 CSV）：\n\n```csv\n").append(input).append("```\n\n")
                     .append("格式配置：\n\n```text\n").append(config).append("```\n\n")
                     .append("期望结果：\n\n```text\n").append(result).append("```\n\n");
@@ -104,9 +107,9 @@ class ScenarioBookTest {
         }
         final String generated = (LICENSE + "\n# 对账业务事实 · Approved Scenarios\n\n"
                 + "本页由 `ScenarioBookTest` 从 `src/test/resources/org/apache/commons/csv/approved/` 生成。"
-                + "期望结果由 S2 规格手工推导；此测试只核对文档同步，不运行待实现 API。"
+                + "期望结果由 S2/S2R 规格手工推导；此测试只核对文档同步，不运行待实现 API。"
                 + "规则定义见 [required-headers.md](specs/required-headers.md)。\n\n"
-                + "## 场景目录\n\n| 编号 | 业务场景 | 对应规则 |\n| --- | --- | --- |\n"
+                + "## 场景目录\n\n| 编号 | 业务场景 | 对应规则 | 判定路径 |\n| --- | --- | --- | --- |\n"
                 + toc + "\n" + chapters).replaceFirst("\\n+\\z", "\n");
 
         // Act

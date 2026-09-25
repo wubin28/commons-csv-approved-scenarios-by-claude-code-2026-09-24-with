@@ -17,36 +17,39 @@
 
 # 对账业务事实 · Approved Scenarios
 
-本页由 `ScenarioBookTest` 从 `src/test/resources/org/apache/commons/csv/approved/` 生成。期望结果由 S2 规格手工推导；此测试只核对文档同步，不运行待实现 API。规则定义见 [required-headers.md](specs/required-headers.md)。
+本页由 `ScenarioBookTest` 从 `src/test/resources/org/apache/commons/csv/approved/` 生成。期望结果由 S2/S2R 规格手工推导；此测试只核对文档同步，不运行待实现 API。规则定义见 [required-headers.md](specs/required-headers.md)。
 
 ## 场景目录
 
-| 编号 | 业务场景 | 对应规则 |
-| --- | --- | --- |
-| 01 | [账单列齐全](#scenario-01) | R1、R7 |
-| 02 | [一次报告两项缺列](#scenario-02) | R1、R5 |
-| 03 | [额外列和换序可接受](#scenario-03) | R3 |
-| 04 | [忽略大小写后匹配](#scenario-04) | R2 |
-| 05 | [严格大小写时拒绝](#scenario-05) | R2、R5 |
-| 06 | [忽略未引用表头周围空白](#scenario-06) | R2 |
-| 07 | [修剪引号内表头空白](#scenario-07) | R2 |
-| 08 | [未启用空白处理时拒绝](#scenario-08) | R2、R5 |
-| 09 | [显式映射核对真实首行](#scenario-09) | R1 |
-| 10 | [显式映射不能掩盖缺列](#scenario-10) | R1、R5 |
-| 11 | [允许重复列时仍算存在](#scenario-11) | R3 |
-| 12 | [重复表头错误优先](#scenario-12) | R3 |
-| 13 | [空文件全部缺列](#scenario-13) | R4、R5 |
-| 14 | [关闭功能维持自动表头行为](#scenario-14) | R6 |
-| 15 | [关闭功能维持显式表头行为](#scenario-15) | R6 |
-| 16 | [允许空列名时仍可核对必需列](#scenario-16) | R3 |
-| 17 | [只有注释，没有表头](#scenario-17) | R4、R5 |
-| 18 | [重复空列名可接受](#scenario-18) | R3 |
+| 编号 | 业务场景 | 对应规则 | 判定路径 |
+| --- | --- | --- | --- |
+| 01 | [账单列齐全](#scenario-01) | R1、R7 | A6 → B3 → C2 |
+| 02 | [一次报告两项缺列](#scenario-02) | R1、R5 | A6 → B3 → C3 |
+| 03 | [额外列和换序可接受](#scenario-03) | R3 | A6 → B3 → C2 |
+| 04 | [忽略大小写后匹配](#scenario-04) | R2 | A6 → B3 → C2 |
+| 05 | [严格大小写时拒绝](#scenario-05) | R2、R5 | A6 → B3 → C3 |
+| 06 | [忽略未引用表头周围空白](#scenario-06) | R2 | A6 → B3 → C2 |
+| 07 | [修剪引号内表头空白](#scenario-07) | R2 | A6 → B3 → C2 |
+| 08 | [未启用空白处理时拒绝](#scenario-08) | R2、R5 | A6 → B3 → C3 |
+| 09 | [显式映射核对真实首行](#scenario-09) | R1 | A7 → B4 → C2 |
+| 10 | [显式映射不能掩盖缺列](#scenario-10) | R1、R5 | A7 → B4 → C3 |
+| 11 | [允许重复列时仍算存在](#scenario-11) | R3 | A6 → B3 → C2 |
+| 12 | [重复表头错误优先](#scenario-12) | R3 | A6 → B3 → C1 |
+| 13 | [空文件全部缺列](#scenario-13) | R4、R5 | A6 → B1 |
+| 14 | [关闭功能维持自动表头行为](#scenario-14) | R6 | A1 |
+| 15 | [关闭功能维持显式表头行为](#scenario-15) | R6 | A1 |
+| 16 | [允许空列名时仍可核对必需列](#scenario-16) | R3 | A6 → B3 → C2 |
+| 17 | [只有注释，没有表头](#scenario-17) | R4、R5 | A6 → B1 |
+| 18 | [重复空列名可接受](#scenario-18) | R3 | A6 → B3 → C2 |
+| 19 | [显式表头遇到空文件](#scenario-19) | R1、R4、R5 | A7 → B2 |
 
 ## <a id="scenario-01"></a>01 · 账单列齐全
 
 业务说明：上游账单包含账户、币种和金额。对账可以开始。
 
 对应规则：R1、R7
+
+判定路径：A6 → B3 → C2
 
 输入（原样 CSV）：
 
@@ -77,6 +80,8 @@ requiredHeaders: account_id,currency,amount
 
 对应规则：R1、R5
 
+判定路径：A6 → B3 → C3
+
 输入（原样 CSV）：
 
 ```csv
@@ -104,6 +109,8 @@ requiredHeaders: currency,amount
 业务说明：上游调整列顺序并新增批次号。必需列仍齐全。
 
 对应规则：R3
+
+判定路径：A6 → B3 → C2
 
 输入（原样 CSV）：
 
@@ -133,6 +140,8 @@ requiredHeaders: account_id,currency,amount
 业务说明：上游把币种列写成大写。当前格式允许忽略大小写。
 
 对应规则：R2
+
+判定路径：A6 → B3 → C2
 
 输入（原样 CSV）：
 
@@ -164,6 +173,8 @@ ignoreHeaderCase: true
 
 对应规则：R2、R5
 
+判定路径：A6 → B3 → C3
+
 输入（原样 CSV）：
 
 ```csv
@@ -192,6 +203,8 @@ ignoreHeaderCase: false
 业务说明：上游在币种列名前后留了空格。格式已开启周围空白忽略。
 
 对应规则：R2
+
+判定路径：A6 → B3 → C2
 
 输入（原样 CSV）：
 
@@ -223,6 +236,8 @@ ignoreSurroundingSpaces: true
 
 对应规则：R2
 
+判定路径：A6 → B3 → C2
+
 输入（原样 CSV）：
 
 ```csv
@@ -252,6 +267,8 @@ trim: true
 业务说明：币种列名前后多了空格；当前格式不忽略这些空格。
 
 对应规则：R2、R5
+
+判定路径：A6 → B3 → C3
 
 输入（原样 CSV）：
 
@@ -283,6 +300,8 @@ trim: false
 
 对应规则：R1
 
+判定路径：A7 → B4 → C2
+
 输入（原样 CSV）：
 
 ```csv
@@ -313,6 +332,8 @@ requiredHeaders: account_id,currency
 
 对应规则：R1、R5
 
+判定路径：A7 → B4 → C3
+
 输入（原样 CSV）：
 
 ```csv
@@ -341,6 +362,8 @@ requiredHeaders: currency
 业务说明：上游重复发送币种列。当前格式允许重复表头，币种仍已出现。
 
 对应规则：R3
+
+判定路径：A6 → B3 → C2
 
 输入（原样 CSV）：
 
@@ -372,6 +395,8 @@ duplicateHeaderMode: ALLOW_ALL
 
 对应规则：R3
 
+判定路径：A6 → B3 → C1
+
 输入（原样 CSV）：
 
 ```csv
@@ -401,6 +426,8 @@ duplicateHeaderMode: DISALLOW
 
 对应规则：R4、R5
 
+判定路径：A6 → B1
+
 输入（原样 CSV）：
 
 ```csv
@@ -426,6 +453,8 @@ requiredHeaders: currency,amount
 业务说明：未设置必需列时，只有账户和金额的账单仍按原样解析。
 
 对应规则：R6
+
+判定路径：A1
 
 输入（原样 CSV）：
 
@@ -455,6 +484,8 @@ requiredHeaders: off
 业务说明：系统显式声明账户和币种，未跳过文件首行。原有行为会把首行当作数据。
 
 对应规则：R6
+
+判定路径：A1
 
 输入（原样 CSV）：
 
@@ -487,6 +518,8 @@ requiredHeaders: off
 
 对应规则：R3
 
+判定路径：A6 → B3 → C2
+
 输入（原样 CSV）：
 
 ```csv
@@ -517,6 +550,8 @@ allowMissingColumnNames: true
 
 对应规则：R4、R5
 
+判定路径：A6 → B1
+
 输入（原样 CSV）：
 
 ```csv
@@ -545,6 +580,8 @@ commentMarker: #
 
 对应规则：R3
 
+判定路径：A6 → B3 → C2
+
 输入（原样 CSV）：
 
 ```csv
@@ -568,4 +605,33 @@ duplicateHeaderMode: ALLOW_EMPTY
 实际表头：[, currency, ]
 记录：
 - [unused, TWD, other]
+```
+
+## <a id="scenario-19"></a>19 · 显式表头遇到空文件
+
+业务说明：系统预设账户与币种列，并准备跳过文件首行。上游文件为空，无法证明真实表头存在，两个必需列都算缺失。
+
+对应规则：R1、R4、R5
+
+判定路径：A7 → B2
+
+输入（原样 CSV）：
+
+```csv
+```
+
+格式配置：
+
+```text
+header: account_id,currency
+skipHeaderRecord: true
+requiredHeaders: account_id,currency
+```
+
+期望结果：
+
+```text
+状态：拒绝
+异常类型：IllegalArgumentException
+完整消息：Missing required CSV headers: [account_id, currency]
 ```
