@@ -17,7 +17,7 @@
 
 # Required headers 规格草案
 
-依据：[S1–S2R 决策](decisions.md)。本文件定义待实现行为，不表示 API 已存在。场景期望由决策手工推导；S2R 不执行新 API。先看 [CSV 业务实例与现有源码关系](../required-headers-by-examples.md)，再用本文件核对精确规则。
+依据：[S1–S2R 决策](decisions.md)。本文件定义待实现行为，不表示 API 已存在。场景期望由决策手工推导；S2R 不执行新 API。先看 [CSV 业务实例与现有源码关系](../required-headers-by-examples.md)，也可按 [现有端到端路径调试指南](../required-headers-by-running-e2e-test.md) 单步观察场景 10 的旧行为，再用本文件核对精确规则。
 
 ## 1. 问题陈述
 
@@ -145,6 +145,8 @@ C 的第二行按现有 CSV 词法处理 `ignoreSurroundingSpaces`、`trim`，�
 | 17 | 文件只有注释，没有有效首条记录时报告全部缺列。 | R4、R5 |
 | 18 | ALLOW_EMPTY 允许重复空列名，已出现的必需列仍通过。 | R3 |
 | 19 | 显式表头且跳过首行，空文件也报告全部必需列缺失。 | R1、R4、R5 |
+
+场景 10 的原样 CSV 另存为 [可执行测试数据](../../src/test/resources/org/apache/commons/csv/e2e/reconciliation-missing-currency.csv)，供 [现有路径端到端测试](../../src/test/java/org/apache/commons/csv/RequiredHeadersExistingFlowE2ETest.java) 读取并做“账户 → 币种”归集。该测试只表征未启用新功能时显式映射会把金额当币种；场景 10 的新异常期望仍是手工推导，尚待后续执行器验证。[Q11](decisions.md)
 
 ### 7.2 接口契约 → 普通 JUnit 契约单测
 

@@ -361,3 +361,36 @@ S2R 修改已提交，未打 tag。commit：`docs(s2r): explain required headers
 [CSV 实例讲解](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/required-headers-by-examples.md)用 5 组业务输入串起现有 Builder、Lexer、CSVParser、CSVRecord 与 CSVPrinter，并区分当前行为和拟新增行为。规格已链接讲解；决策记录续写 Q10。
 
 `docs/business-facts.md` diff：新增 2 行、删除 2 行，仅更新场景 02、10 的业务说明；CSV 输入、配置和期望结果未变。请评审实例讲解及对应源码关系；下一步等你继续评审。
+
+## S2R · 第 4 轮
+
+### 我
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## S2R · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag。
+
+【本环节：S2R 评审意见】
+下面是我的评审意见：
+<逐条写：文件/场景编号 → 问题 → 期望的改法；没有意见就写"全部通过">
+
+请选用一个执行路径与新增需求required headers在业务执行路径上相近的端到端自动化测试（尽量选现成的，如果没有现成的，那么就生成一个，端到端意味着从一个供测试用的实例化CSV文件出发，让端到端自动化测试读取该CSV文件，并做业务处理），以便我能在vscode里用debug模式单步运行这个端到端自动化测试，从而理解与上述新需求相关的现有的生成代码是如何工作的。最后请把运行上述端到端自动化测试的指南以markdown格式保存到 docs/required-headers-by-running-e2e-test.md 文件中，要求包含在vscode中以debug方式运行上述测试的步骤。
+
+请：
+1. 逐条落实到 spec、夹具、decisions.md（新决定按问题编号续写）；夹具里的期望结果仍然手工推导。
+2. 用 APPROVE=1 重新生成 docs/business-facts.md，并把它的 diff 摘要给我看。
+3. 如果我写的是"全部通过"：提交并打 tag as-s2-spec-approved。否则提交修改（不打 tag），然后停下等我下一轮评审。
+
+### Agent
+
+先找现有“读取 CSV 文件 → 按列名处理记录”的测试。能复用就写 VS Code 调试指南；若现有测试缺少这段业务路径，再补最小文件测试。新测试只跑当前代码，不调用未实现的 `setRequiredHeaders`。
+
+现有测试各覆盖一半：`CSVFileParserTest` 读真实文件，但只核对原始字段；`CSVParserTest` 按列名取值，但用内联字符串。没有一条同时覆盖文件读取和对账处理。我会新增一条最小表征测试：读取与场景 10 相同的 CSV，走现有显式表头路径，显示金额如何被旧映射当成币种。
+
+新增文件测试已单独通过：它从真实 CSV 读入，再把旧映射得到的 `A-001 → 12.50` 放进业务归集结果。Q11、规格链接和 VS Code 调试指南已写入。`APPROVE=1` 重生成成功；`docs/business-facts.md` diff 为 0 行，因为 19 份 Approved Scenarios 的输入、配置和手工期望均未变。
+
+S2R 修改已提交，未打 tag。commit：`test(s2r): add debuggable existing CSV reconciliation flow`。`mvn test`：926 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。
+
+[调试指南](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/required-headers-by-running-e2e-test.md)给出 VS Code Debug 步骤和断点；[端到端测试](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/RequiredHeadersExistingFlowE2ETest.java)读取与场景 10 相同的 [CSV 文件](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/e2e/reconciliation-missing-currency.csv)，执行“账户 → 币种”归集。测试表征旧行为，未调用新 API。
+
+`docs/business-facts.md` diff：0 行；Approved Scenarios 的期望未变。决策记录续写 Q11，规格链接新测试。请继续评审；本轮未打 `as-s2-spec-approved` tag。

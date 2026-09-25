@@ -33,6 +33,8 @@
 
 待后续环节补充测试入口和命令。
 
+现有业务执行路径可先运行 `mvn -Dtest=RequiredHeadersExistingFlowE2ETest test`，再按 [VS Code 单步调试指南](docs/required-headers-by-running-e2e-test.md) 观察文件读取、显式表头映射与业务取值。此测试只用现有 API；Approved Scenarios 的新 API 执行器仍待后续环节实现。
+
 # 3. 故障注入与失败原因
 
 待后续环节记录。

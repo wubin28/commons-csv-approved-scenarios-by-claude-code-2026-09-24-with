@@ -171,6 +171,7 @@
               <!-- These files are used as test data and test result specifications. -->
               <inputExclude>src/test/resources/org/apache/commons/csv/empty.txt</inputExclude>
               <inputExclude>src/test/resources/org/apache/commons/csv/CSV-141/csv-141.csv</inputExclude>
+              <inputExclude>src/test/resources/org/apache/commons/csv/e2e/reconciliation-missing-currency.csv</inputExclude>
               <inputExclude>src/test/resources/org/apache/commons/csv/csv-167/sample1.csv</inputExclude>
               <inputExclude>src/test/resources/org/apache/commons/csv/CSV-198/optd_por_public.csv</inputExclude>
               <inputExclude>src/test/resources/org/apache/commons/csv/CSV-196/emoji.csv</inputExclude>
