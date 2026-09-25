@@ -1,0 +1,54 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# fault-injection/13-skip-absent-header-validation.patch
+--- src/test/resources/org/apache/commons/csv/approved/13-empty-input.approved.md	2026-09-25 13:18:04
++++ src/test/resources/org/apache/commons/csv/approved/13-empty-input.received.md	2026-09-25 18:56:04
+@@ -33,7 +33,7 @@
+<blank context>
+ ## 解析结果
+ ```text
+-状态：拒绝
+-异常类型：IllegalArgumentException
+-完整消息：Missing required CSV headers: [currency, amount]
++状态：通过
++实际表头：[]
++记录：
+ ```
+--- src/test/resources/org/apache/commons/csv/approved/17-comment-only.approved.md	2026-09-25 09:41:55
++++ src/test/resources/org/apache/commons/csv/approved/17-comment-only.received.md	2026-09-25 18:56:04
+@@ -35,7 +35,7 @@
+<blank context>
+ ## 解析结果
+ ```text
+-状态：拒绝
+-异常类型：IllegalArgumentException
+-完整消息：Missing required CSV headers: [currency, amount]
++状态：通过
++实际表头：[]
++记录：
+ ```
+--- src/test/resources/org/apache/commons/csv/approved/19-explicit-empty-input.approved.md	2026-09-25 09:41:39
++++ src/test/resources/org/apache/commons/csv/approved/19-explicit-empty-input.received.md	2026-09-25 18:56:04
+@@ -34,7 +34,7 @@
+<blank context>
+ ## 解析结果
+ ```text
+-状态：拒绝
+-异常类型：IllegalArgumentException
+-完整消息：Missing required CSV headers: [account_id, currency]
++状态：通过
++实际表头：[]
++记录：
+ ```

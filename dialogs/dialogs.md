@@ -653,3 +653,65 @@ S5 完成。commit：`refactor(s5): simplify required header validation and scen
 - `ScenarioBookTest`：每场景只格式化一次编号，复用目录与章节锚点。
 
 每步后运行三个目标测试类；最终 `mvn test`：975 次，失败 0、错误 0、跳过 11（与 S4 一致）。`.approved.md` 和 `docs/business-facts.md` 未改；无 `.received.md`。下一环节：待你指定。
+
+## S6 · 第 1 轮
+
+### 我
+
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+@/Users/binwu/.codex/RTK.md
+</INSTRUCTIONS><environment_context>
+  <cwd>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-09-25</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。不要 git push；不要修改 /Users/binwu/OOR/katas/commons-csv 和 ../without。
+- 每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## <环节编号> · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 遇到坑：先修复，再往 guide.md「踩坑记录」追加：环节 · 现象 → 原因 → 解决。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag，然后告诉我：commit、tag、mvn test 结果、下一环节。
+
+【本环节：S6 故障注入】
+目的：证明每份业务事实夹具、每个契约单测都真的在保护生产代码的某个行为，而不是徒有其名。
+1. 设计变异：每个变异只改 src/main 里的一小处，改成一个"看起来合理但错误"的行为（例如去掉校验调用、改成忽略大小写、缺失列顺序打乱、功能关闭时仍然校验、漏掉构建期检查、equals 漏比较新字段等）。要求：每份 .approved.md 夹具、RequiredHeadersContractTest 的每个测试方法，都至少被一个专门为它设计的变异打红。
+2. 每个变异存成一个 patch：fault-injection/<NN>-<英文意图短语>.patch。
+3. 先写预测，后运行：fault-injection/expected.md 表格列为：变异编号 | 改了什么 | 针对的夹具或测试 | 预期失败的完整集合（夹具编号 + 契约测试方法名）| 预期理由（用业务语言说：哪条业务事实会被违反）。
+4. 写 fault-injection/run-fault-injection.sh（bash，macOS 自带工具即可运行）：
+   - 开始前要求工作区干净，并先确认无注入时两个测试类全绿；
+   - 对每个 patch：git apply → 只跑 ApprovedScenariosTest 和 RequiredHeadersContractTest → 从 surefire 报告收集失败项 → 与预期集合比较 → git apply -R 还原（用 trap 保证中途退出也会还原）→ 删除本次产生的 .received.md，但先把它和 approved 的 diff 摘要存到 fault-injection/diffs/<NN>.diff；
+   - 最后打印汇总表（变异 | 预期 | 实际 | 一致？）；只要有一个不一致，就以非零状态退出。
+5. 运行脚本，把输出保存到 fault-injection/last-run.log。逐一分析每个不一致：是预测错了（改 expected.md，并在 dialogs 里说明错在哪），还是测试有空洞（需要新增夹具或契约单测时，先停下来问我，因为这会改动已评审过的业务事实）。直到全部一致。
+6. 确认工作区没有残留的注入和 received 文件，完整 mvn test 全绿。提交并打 tag as-s6-fault-injection。
+
+### Agent
+
+我会先读仓库规则、S6 相关测试和夹具，再逐个设计变异、写预测并运行脚本。若发现测试空洞需要改动已评审业务事实，我会先停下询问。
+
+本轮按已授权的 S6 验证工作推进。我会用 brainstorming 梳理变异覆盖，用单测规范检查覆盖目标；设计需要确认的步骤按你给定的环节要求直接执行。
+
+已确认 19 份夹具和契约测试覆盖构建期、解析期、功能关闭、值语义等路径。下一步先跑两类测试基线，再制作每个只改一处生产代码的补丁。
+
+预测表与 35 个独立补丁已写入。现在运行脚本，核对 Surefire 实际失败集合；不一致项会逐项查原因。
+
+首轮脚本被仓库 Apache RAT 门禁挡住：新补丁和日志缺许可证标识；另发现补丁为零上下文格式，需用 `git apply --unidiff-zero`。两处已修，现重跑。
+
+脚本已通过基线，正在逐个注入并回滚。首轮预测按目标行为填写；运行结束后会把所有额外失败或未命中的项核对清楚。
+
+发现首轮失败清单解析有误：Perl 正则把自闭合的通过用例与后面的失败用例配错。已修正解析器；正在重新运行 35 个变异，以 Surefire XML 重新核对。
+
+第二轮得到 15 处真实集合差异：14 处是预测漏算同一改动波及的场景；第 28 号变异被后续数组复制抵消，未打红目标测试。已把第 28 号改为在复制函数处注入，并单独验证命中；预测表已按证据修订，现做整轮复核。
+
+整轮复核完成：35 个变异全部命中修订后的完整预测集合，脚本返回 0；源码无注入残留，received 文件为 0。现在跑完整 `mvn test`，再核对提交内容与 tag。
+
+完整 `mvn test` 复跑通过：975 次，失败 0、错误 0、跳过 11。对话记录和踩坑记录已写入；现在一次性提交 S6 文件并打指定 tag。
+
+完成 S6。35/35 个变异的预期与实际一致；19/19 份夹具、20/20 个契约方法均被变异打红。完整 `mvn test`：975 次，失败 0、错误 0、跳过 11；无注入或 `.received.md` 残留。
+
+首轮预测漏算 14 个变异的连带失败；28 号初版被构造函数二次复制抵消，已改注入点。逐项原因见 [expected.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/fault-injection/expected.md)。
+
+提交：`test(s6): prove required header contracts with fault injection`；tag：`as-s6-fault-injection`。下一环节：待指定。

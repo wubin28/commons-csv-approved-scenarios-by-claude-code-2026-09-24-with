@@ -41,7 +41,18 @@
 
 # 3. 故障注入与失败原因
 
-待后续环节记录。
+S6 将 35 个单点错误行为分别保存为 `fault-injection/NN-*.patch`。先读
+[`expected.md`](fault-injection/expected.md) 的完整失败集合预测，再运行
+`bash fault-injection/run-fault-injection.sh`。脚本先确认源代码、测试和索引无改动，
+并跑两类测试基线；每轮只应用一个补丁，读取 Surefire XML 的失败用例，保存 approved
+与 received 的差异摘要到 `fault-injection/diffs/NN.diff`，回滚并清除 received。
+中断时 EXIT trap 也会回滚。输出见 `fault-injection/last-run.log`。
+
+最终 35 个变异的预期与实际失败集合全部一致。01–19 各为同编号业务夹具设计；
+20–35 覆盖契约测试的构建期约束、禁用/重启、大小写、数组防御性复制、值语义、
+格式描述、打印和短记录。第 28 号初版只绕过 Builder 的复制，构造函数仍复制数组，
+未能打红测试；改为在共用复制函数注入后命中。其余预测修订均是漏算同一错误行为
+影响的其他夹具或契约方法，未改变已评审业务事实或测试。
 
 # 4. 踩坑记录
 
@@ -61,6 +72,12 @@
 - 环节 S4 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱对 `.git` 仅开放读取 → 按授权流程提升本仓库 `git add` 权限，成功暂存。
 - 环节 S5 契约测试补丁 · 一次跨多处修改的补丁因末尾上下文不匹配而未应用 → 补丁覆盖范围过大，定位不够精确 → 拆成小补丁逐处应用，并重跑三个目标测试类确认通过。
 - 环节 S5 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱仍只允许读取 `.git` → 按授权流程提升本仓库 `git add` 权限，成功暂存。
+- 环节 S6 脚本基线 · `Unexpected count for UNAPPROVED, limit is [0,0]. Count: 36` → RAT 将新增 patch 与日志判为缺许可证 → 给 patch、日志和 diff 加 Apache 许可证头，基线恢复通过。
+- 环节 S6 补丁应用 · `patch failed: src/main/java/org/apache/commons/csv/CSVParser.java:690` → 生成的是零上下文 unified diff，Git 默认不接受 → 应用及回滚统一使用 `git apply --unidiff-zero`。
+- 环节 S6 失败集合提取 · 首轮多个变异误报 `shouldShowRequiredNamesInOrderIfFormatIsRendered` → 正则跨过 Surefire 自闭合的通过用例，把后续失败挂到前一用例 → 排除自闭合 `testcase` 后重跑，按正确 XML 节点提取失败。
+- 环节 S6 第 28 号变异 · 预期 `shouldCopyRequiredNamesIfInputArrayChanges` 打红但实际无失败 → Builder 绕过复制后，CSVFormat 构造函数仍再次复制 → 改为在共用数组复制函数注入，单独验证命中，整轮复核一致。
+- 环节 S6 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱对 `.git` 仅开放读取 → 按授权流程提升本仓库 `git add` 权限，暂存成功。
+- 环节 S6 暂存差异检查 · `fault-injection/diffs/01.diff:19: trailing whitespace.` → unified diff 的空上下文行只有一个空格，作为新文件内容被 Git 判为尾随空白 → 脚本将该摘要行显式写成 `<blank context>`，修复已生成摘要并重新检查。
 
 # 5. 与 without 对照
 
@@ -72,3 +89,4 @@
 - S3 Approved Scenarios 红态：`as-s3-red`；下一环节实现必需列表头行为。
 - S4 Approved Scenarios 绿态：`as-s4-green`；下一环节 S5 待指定。
 - S5 行为保持重构：`as-s5-refactor`；完整 `mvn test` 与 S4 一致，975 次、失败 0、错误 0、跳过 11。
+- S6 故障注入：`as-s6-fault-injection`；35 个变异全部匹配预测；完整 `mvn test` 通过，975 次、失败 0、错误 0、跳过 11。
