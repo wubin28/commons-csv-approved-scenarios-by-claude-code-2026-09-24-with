@@ -256,3 +256,42 @@ S2 已提交。commit：`docs(s2): define required header scenarios and business
 请按顺序评审：[S1 决策](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) → [S2 规格](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md) → [业务事实汇总](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md) → [原始夹具](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/approved/) → [汇总生成器](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/ScenarioBookTest.java)。
 
 最没把握的 3 点：① 显式映射与真实表头顺序不同但列名齐全时，是否仍只检查存在性；② 场景 07 的带引号空白与 `trim` 的匹配边界；③ 空文件报全部缺列的业务期望。下一环节：你评审通过后，S3 实现 API 与契约测试。
+
+## S2R · 第 1 轮
+
+### 我
+
+<environment_context>
+  <current_date>2026-09-25</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## S2R · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag。
+
+【本环节：S2R 评审意见】
+下面是我的评审意见：
+<逐条写：文件/场景编号 → 问题 → 期望的改法；没有意见就写"全部通过">
+
+请在spec文档 @docs/specs/required-headers.md 里增加决策表或决策树，以便让我了解上述spec文档中的“7. 验收标准”中的各个验收条件，是如何产生的，是否有遗漏。
+
+请：
+1. 逐条落实到 spec、夹具、decisions.md（新决定按问题编号续写）；夹具里的期望结果仍然手工推导。
+2. 用 APPROVE=1 重新生成 docs/business-facts.md，并把它的 diff 摘要给我看。
+3. 如果我写的是"全部通过"：提交并打 tag as-s2-spec-approved。否则提交修改（不打 tag），然后停下等我下一轮评审。
+
+### Agent
+
+按评审意见补验收条件的推导表，检查每个条件能否追溯到 S1 决策。随后重生成业务事实、核对 diff、跑完整测试；本轮有修改，提交后不打 tag。
+
+`receiving-code-review` 已核对：这条意见要求补齐“决策 → 分支 → 验收”的证据链。现有 16 个场景少了两条已定分支的样例：只有注释、没有有效表头；以及 `ALLOW_EMPTY` 下重复空列名。我会补这两份夹具，期望仍按规格手工推导。
+
+已补 Q8 验收推导决定和规格映射表，并新增场景 17、18。`APPROVE=1` 重生成成功；`business-facts.md` diff 为新增 61 行、删除 0 行：两条目录项及对应场景正文，原 16 个场景未变。现在跑完整测试。
+
+S2R 修改已提交，未打 tag。commit：`docs(s2r): trace acceptance criteria to decisions`。`mvn test`：925 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。
+
+`docs/business-facts.md` diff：新增 61 行、删除 0 行；目录从 16 增至 18 个场景，新增“只有注释，没有表头”和“重复空列名可接受”，原 16 个场景未变。
+
+请评审：[验收推导表](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md) → [Q8 决定](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) → [业务事实](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md)及[新增夹具](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/approved/)。下一步：等你继续评审。

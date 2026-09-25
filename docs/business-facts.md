@@ -39,6 +39,8 @@
 | 14 | [关闭功能维持自动表头行为](#scenario-14) | R6 |
 | 15 | [关闭功能维持显式表头行为](#scenario-15) | R6 |
 | 16 | [允许空列名时仍可核对必需列](#scenario-16) | R3 |
+| 17 | [只有注释，没有表头](#scenario-17) | R4、R5 |
+| 18 | [重复空列名可接受](#scenario-18) | R3 |
 
 ## <a id="scenario-01"></a>01 · 账单列齐全
 
@@ -507,4 +509,63 @@ allowMissingColumnNames: true
 实际表头：[, currency]
 记录：
 - [unused, TWD]
+```
+
+## <a id="scenario-17"></a>17 · 只有注释，没有表头
+
+业务说明：上游只送来一行文件注释，没有可核对的表头。币种和金额都算缺失。
+
+对应规则：R4、R5
+
+输入（原样 CSV）：
+
+```csv
+# 本批次暂无数据
+```
+
+格式配置：
+
+```text
+header: auto
+requiredHeaders: currency,amount
+commentMarker: #
+```
+
+期望结果：
+
+```text
+状态：拒绝
+异常类型：IllegalArgumentException
+完整消息：Missing required CSV headers: [currency, amount]
+```
+
+## <a id="scenario-18"></a>18 · 重复空列名可接受
+
+业务说明：上游有两列没有名称，币种列仍存在。当前格式允许重复空列名。
+
+对应规则：R3
+
+输入（原样 CSV）：
+
+```csv
+,currency,
+unused,TWD,other
+```
+
+格式配置：
+
+```text
+header: auto
+requiredHeaders: currency
+allowMissingColumnNames: true
+duplicateHeaderMode: ALLOW_EMPTY
+```
+
+期望结果：
+
+```text
+状态：通过
+实际表头：[, currency, ]
+记录：
+- [unused, TWD, other]
 ```
