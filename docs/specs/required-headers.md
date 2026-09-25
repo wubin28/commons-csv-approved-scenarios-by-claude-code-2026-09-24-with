@@ -17,7 +17,7 @@
 
 # Required headers 规格草案
 
-依据：[S1–S2R 决策](decisions.md)。本文件定义待实现行为，不表示 API 已存在。场景期望由决策手工推导；S2R 不执行新 API。
+依据：[S1–S2R 决策](decisions.md)。本文件定义待实现行为，不表示 API 已存在。场景期望由决策手工推导；S2R 不执行新 API。先看 [CSV 业务实例与现有源码关系](../required-headers-by-examples.md)，再用本文件核对精确规则。
 
 ## 1. 问题陈述
 
@@ -122,7 +122,7 @@ C 的第二行按现有 CSV 词法处理 `ignoreSurroundingSpaces`、`trim`，�
 
 ### 7.1 业务事实 → Approved Scenarios 夹具
 
-以下每行对应 `src/test/resources/org/apache/commons/csv/approved/NN-*.approved.md`。每份夹具写明真实 CSV、与本功能有关的配置、实际表头与记录或异常类型及完整消息。`docs/business-facts.md` 由这些夹具生成。
+以下每行对应 `src/test/resources/org/apache/commons/csv/approved/NN-*.approved.md`。每份夹具写明真实 CSV、与本功能有关的配置、实际表头与记录或异常类型及完整消息。`docs/business-facts.md` 由这些夹具生成；[实例讲解](../required-headers-by-examples.md)把代表场景接到现有生产代码入口。
 
 | 场景 | 业务情境与判断 | 规则 |
 | --- | --- | --- |

@@ -27,7 +27,7 @@
 
 # 1. 业务事实一览
 
-对账方要求在读取数据前发现上游 CSV 缺少的必需表头。16 个业务场景记录通过、拒绝、显式表头、空输入及功能关闭后的既有行为；每个场景均可追溯到 [业务事实汇总](docs/business-facts.md) 与 [规格草案](docs/specs/required-headers.md)。期望结果依 S1 决策手工推导，S2 尚未实现或执行新 API。
+对账方要求在读取数据前发现上游 CSV 缺少的必需表头。[用 CSV 实例理解需求与现有源码](docs/required-headers-by-examples.md)适合先读；[业务事实汇总](docs/business-facts.md)与[规格草案](docs/specs/required-headers.md)提供场景和精确规则。19 个场景涵盖通过、拒绝、显式表头、空输入及功能关闭后的既有行为；期望结果依决策手工推导，尚未实现或执行新 API。
 
 # 2. 如何运行 Approved Scenarios 测试
 

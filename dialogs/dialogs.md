@@ -328,3 +328,36 @@ S2R 修改已提交，未打 tag。commit：`docs(s2r): present acceptance gates
 `docs/business-facts.md` diff：新增 87 行、删除 21 行；目录新增“判定路径”列，原 18 个场景新增 A/B/C 路径，并新增场景 19“显式表头遇到空文件”。原 18 个场景的 CSV 输入、配置和期望结果未变。
 
 请评审：[A/B/C 决策表](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md)、[Q9 决定](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md)、[场景 19](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/approved/19-explicit-empty-input.approved.md)。下一步：等你继续评审。
+
+## S2R · 第 3 轮
+
+### 我
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## S2R · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag。
+
+【本环节：S2R 评审意见】
+下面是我的评审意见：
+<逐条写：文件/场景编号 → 问题 → 期望的改法；没有意见就写"全部通过">
+
+请用少而精的业务实例化需求（使用CSV实例）及其与现有commons-csv相应的生产代码的关系，来解释 @docs/specs/required-headers.md 文件的全部内容，以便让我理解required headers这个新需求是如何与现有代码库中相应的生产代码发生了怎样的关系。请把你的完整解释以markdown格式保存到 docs/required-headers-by-examples.md 文件中。
+
+请：
+1. 逐条落实到 spec、夹具、decisions.md（新决定按问题编号续写）；夹具里的期望结果仍然手工推导。
+2. 用 APPROVE=1 重新生成 docs/business-facts.md，并把它的 diff 摘要给我看。
+3. 如果我写的是"全部通过"：提交并打 tag as-s2-spec-approved。否则提交修改（不打 tag），然后停下等我下一轮评审。
+
+### Agent
+
+先核对现有生产代码中的 Builder、Lexer、表头映射、`record.get(name)` 和打印路径，再写少量 CSV 例子串起规格。例子会对应现有夹具与 A/B/C 判定路径；新增 Q10 记录说明方式，最后重生成文档、跑测试并提交。本轮不打 tag。
+
+源码关系已核对：`Builder#get()` 创建 `CSVFormat`；`CSVParser` 构造时执行 `createHeaders()`；显式表头目前只跳过真实首行，不核对内容。例子文档会区分现有行为与拟新增行为，重点说明显式映射如何掩盖上游缺列。
+
+实例文档已写入，并接到规格与 guide。夹具 02、10 的业务说明已补充“现有行为 → 拟新增行为”；异常期望未改。`APPROVE=1` 重生成后，`business-facts.md` diff 为新增 2 行、删除 2 行，只涉及这两处说明。现在核对文档链接并跑完整测试。
+
+S2R 修改已提交，未打 tag。commit：`docs(s2r): explain required headers with CSV examples`。`mvn test`：925 次，失败 0、错误 0、跳过 11（BUILD SUCCESS）。
+
+[CSV 实例讲解](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/required-headers-by-examples.md)用 5 组业务输入串起现有 Builder、Lexer、CSVParser、CSVRecord 与 CSVPrinter，并区分当前行为和拟新增行为。规格已链接讲解；决策记录续写 Q10。
+
+`docs/business-facts.md` diff：新增 2 行、删除 2 行，仅更新场景 02、10 的业务说明；CSV 输入、配置和期望结果未变。请评审实例讲解及对应源码关系；下一步等你继续评审。
