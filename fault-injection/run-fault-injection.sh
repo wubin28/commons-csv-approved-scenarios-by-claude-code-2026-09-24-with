@@ -63,13 +63,13 @@ trap restore EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-# Own uncommitted deliverables are allowed until the one S6 commit.
-# Source, tests, fixtures, and index must be pristine.
-if ! git diff --quiet || ! git diff --cached --quiet; then
-    echo "ERROR: tracked working tree or index is dirty" >&2
+# Only production files touched by mutations and the index must be pristine.
+# Guide edits and additional test files may be in progress during an S7 rerun.
+if ! git diff --quiet -- src/main/java || ! git diff --cached --quiet; then
+    echo "ERROR: production source or index is dirty" >&2
     exit 2
 fi
-if [ -n "$(git ls-files --others --exclude-standard | grep -v '^fault-injection/' || true)" ]; then
+if [ -n "$(git ls-files --others --exclude-standard | grep -Ev '^(fault-injection/|docs/)' || true)" ]; then
     echo "ERROR: unrelated untracked files exist" >&2
     exit 2
 fi

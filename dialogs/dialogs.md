@@ -715,3 +715,61 @@ S5 完成。commit：`refactor(s5): simplify required header validation and scen
 首轮预测漏算 14 个变异的连带失败；28 号初版被构造函数二次复制抵消，已改注入点。逐项原因见 [expected.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/fault-injection/expected.md)。
 
 提交：`test(s6): prove required header contracts with fault injection`；tag：`as-s6-fault-injection`。下一环节：待指定。
+
+## S7 · 第 1 轮
+
+### 我
+
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+@/Users/binwu/.codex/RTK.md
+</INSTRUCTIONS><environment_context>
+  <cwd>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-09-25</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。不要 git push；不要修改 /Users/binwu/OOR/katas/commons-csv；对 ../without 只读不写。
+- 每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## <环节编号> · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag，然后告诉我：commit、tag、下一环节。
+
+【本环节：S7 理解指南】
+读者是讲师本人：他要看懂这次按 spec、用 Approved Scenarios 方法做出的测试和生产代码。请补全 guide.md（保留已有内容）：
+- 「0. 环境与基线」：补上最终的全量测试数字。
+- 「1. 业务事实一览」：场景编号 | 业务标题 | 结论（通过或拒绝）| 对应规则；附上 docs/business-facts.md 的链接。
+- 「2. 如何运行 Approved Scenarios 测试」：可以直接复制的命令，包括只跑夹具、只跑契约单测、跑全量、重新生成 business-facts.md、出现红灯时怎样看 received 与 approved 的 diff、确认后怎样用 APPROVE=1 接受并评审 diff、跑故障注入脚本，以及各自的预期输出。另外写清"新增一个场景"的完整流程：只需新增一份夹具并评审它，不用改执行器。
+- 「3. 故障注入与失败原因」：每个变异一小节，写清：改动的 diff（原样贴出）；哪些夹具或测试变红；贴出 fault-injection/diffs/<NN>.diff 里 approved 与 received 的关键差异；用业务语言解释"这份业务事实为什么能发现这个破坏"；如果还有别的测试同时变红，说明原因。
+- 「4. 踩坑记录」：整理成表：环节 | 现象 | 原因 | 解决 | 怎样提前避开。
+- 「5. 与 without 对照」：读取 ../without（只读）。选 2～3 个两条线都覆盖的业务事实（例如"缺失一列"），并排贴出 without 的 JUnit 测试方法原文和 with 的 .approved.md 原文；再附一张覆盖对照表：规则（R、C 编号）| without 中的测试方法（没有就写"无"）| with 中的夹具或契约测试；最后用 5 句以内总结两者在可读性和可评审性上的差异，只写你从这两份代码里实际看到的，不要泛泛而谈。
+- 「6. 环节与 tag」：表格列出 tag | commit | 做了什么 | mvn test 结果。
+另找一条具有代表性的端到端自动化测试：它须从测试用的实例化 CSV 文件读取数据，再按列名取值做业务处理。优先复用 S2 的测试与 CSV；若需更换，说明原因。没有合适测试时，新增最小的现有行为表征测试及 CSV 文件，只调用本阶段已存在的生产 API，不验证未实现的新功能。写 docs/required-headers-by-running-e2e-test-after.md，给出运行命令、VS Code 中以 Debug 模式启动测试的具体步骤、建议断点和可观察的调用路径；对照 S2 的 docs/required-headers-by-running-e2e-test.md，说明当时的现有结果、spec 拟新增结果及本阶段实际实现结果。若新增测试数据，按仓库构建规则处理。
+再选一条能实际进入已实现的 required headers 校验、因缺少必需列而在读取首条记录前报错的自动化测试；优先复用现有测试，没有合适测试时才新增最小测试与实例化 CSV 文件，只调用已实现的生产 API。基于这条测试实际运行经过的类、方法和异常路径，绘制 PlantUML sequence diagram；不要把前述按列名取值的成功测试与这条缺列拒绝测试拼成一次调用。将 `after` 图的 `.puml` 与 PNG 放在本仓库 `docs/sequence-diagrams/after/`，参考 S2 的 `before` 图和 PlantUML 语法资料；可复用 `docs/sequence-diagrams/before/` 已下载的工具，在本机 macOS 实际渲染，检查命令成功且 PNG 存在、可被 `sips` 识别。把图、可复制的渲染与核验命令、测试入口、关键断点和异常抛出位置写进 after 指南，并在 guide.md「2. 如何运行 Approved Scenarios 测试」链接 after 指南及两阶段图。新增文件须通过仓库构建检查；`.gitignore` 继续忽略下载工具，保留图源和 PNG。
+写完后，按「2. 如何运行」里的命令逐条执行一遍，确认文档没有写错。提交并打 tag as-s7-guide。
+
+### Agent
+
+先核对仓库、现有指南、测试与 S2 图，再补文档和缺少的表征测试。完成后逐条执行指南命令，检查 PNG，最后提交并打 `as-s7-guide`。本轮会使用仓库中的工作规范与验证技能。
+
+现有 `guide.md` 留有 S3 的红态说明和 S6 的概述。本环节会保留这些历史记录，补上当前可执行命令、35 个变异的逐项证据，以及与 `without` 的源码对照。
+
+已找到可复用的两条入口：S2 的文件读取成功测试，以及现有契约测试中的“构造解析器即拒绝缺列”。仓库里未找到 S2 的 `before` 图或已下载的 PlantUML 工具；我会以 S2 测试源码补出可核对的 `before` 图，再绘制独立的拒绝路径 `after` 图。
+
+两张图已在本机渲染，`sips` 确认为 PNG。新增场景流程检查出执行器原先写死“19 份”；我已改为扫描夹具并检查集合非空，使新增场景无需修改执行器。接下来补齐 35 个变异的原始补丁和结果差异。
+
+指南主体已补齐。现在按第 2 节顺序实跑夹具、契约、全量、汇总生成和故障注入；若文档中的预期数字与实测不同，我会据实修正。
+
+夹具 23/23、契约 26/26、全量 975 次均通过；`ScenarioBookTest` 的检查与批准命令也通过。故障注入脚本正在逐个运行 35 个变异。
+
+故障注入仍在运行；脚本每轮会应用一个补丁、跑两类测试，再回滚并清理 received 文件。结束后我会核对 35 个结果、源码状态和文档中的命令。
+
+35 个变异全部得到预期红灯，脚本汇总为 `Mutations: 35; mismatches: 0`，且无 received 残留。审阅文档时发现几处由批量插入带来的 Markdown 前缀，以及 S3 历史说明容易被读成当前预期；正在修正后做最终全量复测。
+
+最终复测通过：`mvn test` 975 次，失败 0、错误 0、跳过 11；`git diff --check` 无问题，两张 PNG 可被 `sips` 识别，未留下 received 文件。现在一次性提交 S7 产物并打指定 tag。
+
+S7 完成。`mvn test`：975 次，失败 0、错误 0、跳过 11；故障注入 35/35 匹配。两张 PNG 已本机渲染并经 `sips` 验证。
+
+交付：[guide.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/guide.md)、[after 指南](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/required-headers-by-running-e2e-test-after.md)、[after 图](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/sequence-diagrams/after/required-headers-missing.png)。commit：`docs(s7): complete approved scenarios teaching guide`；tag：`as-s7-guide`。下一环节：待指定。

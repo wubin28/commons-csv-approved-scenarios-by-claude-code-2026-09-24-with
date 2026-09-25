@@ -23,6 +23,7 @@ buildNumber.properties
 
 /.vscode/
 /.DS_Store
+/docs/sequence-diagrams/tools/
 
 # NetBeans files
 nb-configuration.xml
