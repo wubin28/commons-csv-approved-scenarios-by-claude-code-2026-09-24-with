@@ -67,6 +67,8 @@
 
 按 [Q9](decisions.md) 分三段读表：A 先判功能开关与构建配置；仅 A6/A7 进入 B，读取真实首条有效记录；仅 B3/B4 进入 C，先应用既有表头策略，再比较必需列。每列是一条规则；“—”表示该列走到动作时该条件无关，空格不用于省略条件。夹具的“路径”逐段记录命中的列。7.2 的普通单测在实现环节编写。
 
+把三张表看成对账文件进入系统前的三道关卡：A 检查调用方是否打开校验、配置是否自洽；B 检查文件有没有可当表头的真实记录；C 检查这条记录是否合法、包含所需列。**沿一列从上往下读条件，命中动作后停止；只有“进入 B/C”才继续。**表中 A1、B1、C1 等编号是判定分支，不是 CSV 列号，也不是顺序执行的步骤。例如 `A6 → B3 → C2` 表示依次命中三张表中的一列。下面的例子是待实现行为的手工推导，不表示新 API 已运行。[Q12](decisions.md)
+
 **A · 功能开关与构建期配置**（Q0、Q1、Q3、Q5、Q6；C1–C3、R6）
 
 | 条件／动作 | A1 | A2 | A3 | A4 | A5 | A6 | A7 |
@@ -83,6 +85,8 @@
 
 名称有效性按构建时最终 `ignoreHeaderCase` 判断，setter 顺序无关；空数组、null 数组属于 A1。A4 已终止，无须再问映射是否齐全。A5 仅在跳过首行后判定映射。A1 的 `header`、`skipHeaderRecord` 组合沿用旧行为。
 
+**怎样从决定推到 A：**Q5/Q6 先给开关语义：没有非空必需列就走 A1，像未启用门禁，文件照旧解析；[场景 14](../../src/test/resources/org/apache/commons/csv/approved/14-disabled-auto.approved.md) 的 `account_id,amount` 即使没有 `currency` 也通过。启用后，Q1/Q5 要求名称有效，所以无效名落 A2；Q0/Q3 要求有可核对的真实表头来源，于是无表头落 A3，显式表头却不跳首行落 A4，显式映射缺必需名落 A5。这四类配置在 `Builder#get()` 时拒绝，尚未读 CSV。配置有效且使用 `setHeader()` 自动模式，走 A6；使用 `setHeader("account_id", "currency")` 并跳过首行，且映射包含必需名 `currency`，走 A7。A7 仅证明**本地映射**齐全，不能证明上游文件有 `currency`；[场景 10](../../src/test/resources/org/apache/commons/csv/approved/10-explicit-physical-missing.approved.md) 因此还要进入 B、C。
+
 **B · 真实首条有效记录**（Q0、Q3、Q4；R1、R4、R5）
 
 | 条件／动作 | B1 | B2 | B3 | B4 |
@@ -94,6 +98,8 @@
 | **验收** | 13、17 | 19 | 01–08、11、12、16、18 | 09、10 |
 
 自动模式取首条有效记录，显式模式取被跳过的真实记录；注释和空行仍按原有 CSV 格式处理。B1/B2 在解析器构造期抛 R5 的固定消息。
+
+**怎样从决定推到 B：**Q0/Q3 指定要看上游的真实首行，Q4 要求在解析器构造期报告缺失。把 B 想成验收员打开箱子找清单：自动模式从首条有效记录取清单；显式且跳首行模式从**被跳过的文件记录**取清单，本地声明不能代替它。若箱子是空的，[场景 13](../../src/test/resources/org/apache/commons/csv/approved/13-empty-input.approved.md) 从 A6 落 B1；若显式模式遇空文件，[场景 19](../../src/test/resources/org/apache/commons/csv/approved/19-explicit-empty-input.approved.md) 从 A7 落 B2。两者都把配置的 `currency,amount` 全部列为缺失：`Missing required CSV headers: [currency, amount]`。有真实记录则自动模式落 B3、显式模式落 B4，继续查记录内容；`account_id,amount` 虽缺 `currency`，仍**有**首条记录，[场景 10](../../src/test/resources/org/apache/commons/csv/approved/10-explicit-physical-missing.approved.md) 因而是 B4，不是 B2。
 
 **C · 表头策略、名称匹配与结果**（Q1、Q2、Q4、Q7；R2、R3、R5、R7）
 
@@ -107,6 +113,8 @@
 | **验收** | 12 | 01、03、04、06、07、09、11、16、18 | 02、05、08、10 |
 
 C 的第二行按现有 CSV 词法处理 `ignoreSurroundingSpaces`、`trim`，再按最终 `ignoreHeaderCase` 比较；缺失列按声明顺序和原文报告。03 覆盖额外列及换序，11/18 覆盖允许的重复，12 覆盖旧错误优先，04–08 覆盖匹配选项。数据行值、字段数、固定列位及打印不进入 C 判定，由 R7 普通单测覆盖。
+
+**怎样从决定推到 C：**先按 Q2 让既有表头策略验货，再按 Q1/Q4 对照必需名清单。譬如必需名为 `amount`、文件首行为 `account_id,currency,currency` 且禁止重复，[场景 12](../../src/test/resources/org/apache/commons/csv/approved/12-duplicate-rejected-first.approved.md) 命中 C1，先报旧的重复列错误；此时第二个条件是“—”，不再比较 `amount`。若策略允许，再检查词法处理和最终大小写设置后的名称：[场景 01](../../src/test/resources/org/apache/commons/csv/approved/01-auto-complete.approved.md) 的 `account_id,currency,amount` 三项都在，走 C2；额外列、换序或被允许的重复列仍可走 C2。若文件首行为 `account_id,amount`、必需名为 `currency`，[场景 10](../../src/test/resources/org/apache/commons/csv/approved/10-explicit-physical-missing.approved.md) 走 C3，在解析器构造期报告 `Missing required CSV headers: [currency]`。数据行 `A-001,12.50` 不能补足缺失表头；即使 C2 通过，也不在本关卡检查数据行值或列位。[Q12](decisions.md)
 
 **横向契约与覆盖核对**（Q5–Q9）
 

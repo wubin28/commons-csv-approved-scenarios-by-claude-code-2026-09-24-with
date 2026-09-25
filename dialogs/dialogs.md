@@ -394,3 +394,48 @@ S2R 修改已提交，未打 tag。commit：`test(s2r): add debuggable existing 
 [调试指南](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/required-headers-by-running-e2e-test.md)给出 VS Code Debug 步骤和断点；[端到端测试](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/RequiredHeadersExistingFlowE2ETest.java)读取与场景 10 相同的 [CSV 文件](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/resources/org/apache/commons/csv/e2e/reconciliation-missing-currency.csv)，执行“账户 → 币种”归集。测试表征旧行为，未调用新 API。
 
 `docs/business-facts.md` diff：0 行；Approved Scenarios 的期望未变。决策记录续写 Q11，规格链接新测试。请继续评审；本轮未打 `as-s2-spec-approved` tag。
+
+## S2R · 第 5 轮
+
+### 我
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## S2R · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag。
+
+【本环节：S2R 评审意见】
+下面是我的评审意见：
+<逐条写：文件/场景编号 → 问题 → 期望的改法；没有意见就写"全部通过">
+
+请用实例和比喻解释 @docs/specs/required-headers.md 中的“7. 验收标准”中的“验收条件推导表”中的“A · 功能开关与构建期配置”、“B · 真实首条有效记录”和“C · 表头策略、名称匹配与结果”，以便让我理解这3个表格所表达的意思和验收条件推导过程。你可以参考当前目录下的代码库git提交从“9e3c36a4”到“b481a54d”之间的变更内容。
+
+请：
+1. 逐条落实到 spec、夹具、decisions.md（新决定按问题编号续写）；夹具里的期望结果仍然手工推导。
+2. 用 APPROVE=1 重新生成 docs/business-facts.md，并把它的 diff 摘要给我看。
+3. 如果我写的是"全部通过"：提交并打 tag as-s2-spec-approved。否则提交修改（不打 tag），然后停下等我下一轮评审。
+
+### Agent
+
+先读仓库规则、验收表和相关变更，再把解释写进 spec；随后核对夹具与 decisions，重新生成 business-facts，检查 diff，最后提交。本轮不是“全部通过”，因此不打 tag。
+
+仓库要求 shell 命令经 `rtk`；工作区干净。接下来核对相关技能指引，再读验收表和生成脚本。
+
+用 `repo-wiki` 的源码回查方式核对后，确认现有 19 份夹具已覆盖 A/B/C 分支。此轮是解释评审：我会在 spec 增加读表方法和三个逐步推导例子，在代表夹具补路径说明，Q12 记录解释口径；既有期望值保持手工推导。
+
+spec 已补三道关卡的读法；场景 01、10、12、13、14 的说明已对应到分支。现在用 `APPROVE=1` 生成 business-facts，再核对生成 diff 与夹具中 CSV、配置、期望结果是否保持原样。
+
+`APPROVE=1` 生成完成。`business-facts.md` 仅 5 处业务说明变化（+5/−5）；CSV 输入、配置、判定路径、期望结果均未变。接下来跑全量测试并核对提交内容。
+
+三张表像对账文件入库前的三道关：**A 检查配置，B 找真实表头，C 核对表头**。每列是一条独立判定规则；命中终止动作就停，只有“进入 B/C”才继续。
+
+| 实例 | 手工推导路径 | 含义 |
+| --- | --- | --- |
+| 未启用必需列，CSV 只有 `account_id,amount` | A1 | 校验开关关闭，沿用旧行为。 |
+| 自动表头，空文件，必需 `currency,amount` | A6 → B1 | 配置有效；找不到真实首行，两个必需列全报缺失。 |
+| 显式映射含 `currency`，真实首行却是 `account_id,amount` | A7 → B4 → C3 | 本地映射过 A；真实首行存在却缺 `currency`，构造解析器时报缺列。 |
+| 禁止重复，首行 `account_id,currency,currency`，必需 `amount` | A6 → B3 → C1 | 先按旧策略报重复表头；不再比较缺列。 |
+| 首行 `account_id,currency,amount`，必需三列 | A6 → B3 → C2 | 配置、真实首行、列名均通过。 |
+
+推导依据已写入 [规格第 7 节](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md:64)：Q5/Q6 决定 A 的开关，Q0/Q3 决定 A/B 的表头来源，Q2 决定 C 的旧策略优先，Q1/Q4 决定名称匹配与缺列结果。[decisions.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) 续写 Q12；场景 01、10、12、13、14 的说明同步标明推导，期望仍为手工推导。
+
+`APPROVE=1` 重生成 [business-facts.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md)：diff **+5/−5**，仅五处业务说明；CSV、配置、路径、期望结果未变。`mvn test`：926 次，失败 0、错误 0、跳过 11。已提交 `docs(s2r): explain acceptance decision tables`；未打 tag，等下一轮评审。
