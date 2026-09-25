@@ -1,6 +1,7 @@
 ### https://github.com/github/gitignore/blob/master/Maven.gitignore
 
 target/
+src/test/resources/org/apache/commons/csv/approved/*.received.md
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

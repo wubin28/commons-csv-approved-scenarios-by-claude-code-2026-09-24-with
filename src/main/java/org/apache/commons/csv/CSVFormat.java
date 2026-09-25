@@ -624,6 +624,17 @@ public final class CSVFormat implements Serializable {
         }
 
         /**
+         * Declares headers required in the physical input header.
+         *
+         * @param names required header names; {@code null} or empty disables validation
+         * @return this builder
+         */
+        public Builder setRequiredHeaders(final String... names) {
+            // Signature-only S3 stub. Validation and storage belong to the implementation stage.
+            return this;
+        }
+
+        /**
          * Sets the header comments to write before the CSV data.
          * <p>
          * This setting is ignored by the parser.

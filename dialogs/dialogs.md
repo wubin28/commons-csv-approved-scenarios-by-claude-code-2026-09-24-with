@@ -488,3 +488,64 @@ A 表五个条件已逐行接到源码入口，并注明新增校验尚无生产
 收到“全部通过”。我会核对当前状态与测试，追加 S2R 第 7 轮对话，然后一次性提交并打 `as-s2-spec-approved` tag。
 
 S2R 已批准。本轮对话已追加至 [dialogs/dialogs.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/dialogs/dialogs.md)。`mvn test`：926 次，失败 0、错误 0、跳过 11。已提交 `docs(s2r): approve required headers spec`；tag `as-s2-spec-approved` 指向该提交。
+
+## S3 · 第 1 轮
+
+### 我
+
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+@/Users/binwu/.codex/RTK.md
+</INSTRUCTIONS><environment_context>
+  <cwd>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-09-25</current_date>
+  <timezone>Asia/Taipei</timezone>
+  <filesystem><workspace_roots><root>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.git</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.agents</path></entry><entry access="read"><path>/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。不要 git push；不要修改 /Users/binwu/OOR/katas/commons-csv 和 ../without。
+- 每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## <环节编号> · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 遇到坑：先修复，再往 guide.md「踩坑记录」追加：环节 · 现象 → 原因 → 解决。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag，然后告诉我：commit、tag、mvn test 结果、下一环节。
+
+【本环节：S3（Approved Scenarios 红）】
+先读 docs/specs/required-headers.md 和全部 .approved.md 夹具。它们已经过人工评审，本环节不许修改夹具的期望结果和 spec。
+1. 手写执行器 src/test/java/org/apache/commons/csv/ApprovedScenariosTest.java（JUnit 5 @TestFactory，不引入新依赖）：
+   - 从源码目录读取每份夹具，按"输入 + 格式配置"调用生产代码，只重新生成"解析结果"段；
+   - 与夹具原文逐字比较，不一致就写 NN-xxx.received.md（放在夹具旁边，并加进 .gitignore）然后失败；
+   - 环境变量 APPROVE=1 时用实际结果覆盖 .approved.md（只在人工确认 diff 后使用）。
+2. 按 spec 7.2 写普通 JUnit 契约单测 src/test/java/org/apache/commons/csv/RequiredHeadersContractTest.java。
+3. 只在 src/main 加让两个测试类能编译的最小签名桩，不实现行为。
+4. 运行这两个测试类，在 dialogs 里报告：哪些夹具、哪些契约单测红，哪些意外地绿，并解释原因。确认红来自行为，而不是编译错误或执行器 bug。执行器自身的逻辑（解析夹具、写 received、APPROVE 分支）要单独确认一次，把方法写进 guide.md「2. 如何运行」。
+5. 提交并打 tag as-s3-red。
+
+### Agent
+
+先读规范、全部夹具和仓库约束；再写执行器、契约测试与最小签名桩。提交前确认失败来自行为，并记录对话。
+
+本轮按 `product-unit-test-generator` 的单测规范和 `superpowers:test-driven-development` 的红态验证流程执行。先核对现有测试环境，再动源码。
+
+已读 19 份夹具与 7.2 契约。此环节只建立可运行红态：执行器复现夹具输入，生产代码仅补 `setRequiredHeaders` 签名桩。当前仓库已有 JUnit 5 基线。
+
+测试与签名桩已写入。现跑两个类，检查编译、逐份 `.received.md` 和失败类型；若执行器自身有错，先修复再统计红绿。
+
+首轮已编译成功。19 份夹具中 7 红、12 绿；契约测试 25 个用例中 19 红、6 绿，均无运行错误。接着独立验证执行器的夹具读取、received 写入和审批覆盖分支。
+
+发现执行器真 bug：空 CSV 夹具的结束围栏紧贴内容起点，提取器误把后续 Markdown 当 CSV。先修提取逻辑、补自检，再重跑；此前 13、19 的红态暂不计入行为结论。
+
+空输入修复后，自检 4/4 通过；目标测试 48 个用例仍有 26 个失败、0 错误。场景 13、19 现在收到空表头，红态由缺少必需列校验造成。继续跑全量 `mvn test`，核对旧测试。
+
+全量 `mvn test`：974 个用例，失败 26、错误 0、跳过 11；新增 48 个用例贡献全部失败，原有 926 个未回归。夹具与 spec 未改。现在把红绿原因和本轮对话写入 `dialogs.md`，再提交、打 tag。
+
+S3 红态已建立。`commit: test(s3): add approved scenario red tests`；`tag: as-s3-red`。
+
+- 夹具红：02、05、08、10、13、17、19。现有生产代码没有必需列表头校验，收到“通过”而期望“拒绝”。
+- 夹具绿：01、03、04、06、07、09、11、12、14、15、16、18。既有解析行为碰巧符合期望；12 由旧重复表头规则拒绝，14、15 因功能关闭沿用旧行为。绿不代表新功能已实现。
+- 契约红：19/25。C1 重新开启；C2 无效名、最终大小写；C3 构建期表头配置；C4 数组拷贝及格式拷贝；C5 增删换序与字符串；R1/R5 构造期缺列。原因均是签名桩不保存、不校验必需列。
+- 契约绿：6/25。C1 未调用与 null/空数组（3 个用例）、C5 相同配置值语义、R7 空值/短记录和打印。均由原有行为满足；C5 同配置相等属于未存储必需列造成的意外绿。
+- 执行器自检 4/4 通过：非空与空输入解析、差异写 received 并失败、批准分支在临时目录覆盖 approved；未用 `APPROVE=1` 改动源夹具。目标测试 48 个用例：失败 26、错误 0。全量 `mvn test`：974 个用例，失败 26、错误 0、跳过 11；旧 926 个无失败。
+
+文件：[ApprovedScenariosTest.java](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/ApprovedScenariosTest.java)、[RequiredHeadersContractTest.java](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/src/test/java/org/apache/commons/csv/RequiredHeadersContractTest.java)、[guide.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/guide.md)。下一环节：实现必需列表头行为，使红态转绿。

@@ -31,9 +31,13 @@
 
 # 2. 如何运行 Approved Scenarios 测试
 
-待后续环节补充测试入口和命令。
+运行 `mvn -Dtest=ApprovedScenariosTest,RequiredHeadersContractTest test`。S3 预期失败：生产代码只有 `setRequiredHeaders` 签名桩，校验尚未实现。失败场景在夹具旁写入 `NN-xxx.received.md`；它已被 `.gitignore` 忽略。用 `diff -u src/test/resources/org/apache/commons/csv/approved/NN-xxx.approved.md src/test/resources/org/apache/commons/csv/approved/NN-xxx.received.md` 审查单个差异。
 
-现有业务执行路径可先运行 `mvn -Dtest=RequiredHeadersExistingFlowE2ETest test`，再按 [VS Code 单步调试指南](docs/required-headers-by-running-e2e-test.md) 观察文件读取、显式表头映射与业务取值。此测试只用现有 API；Approved Scenarios 的新 API 执行器仍待后续环节实现。
+执行器自检由 `ApprovedScenariosTest` 内四个独立测试完成：读取非空与空 CSV 夹具；在临时目录验证不一致时写 received 且失败；在临时目录验证批准分支覆盖 approved。运行 `mvn -Dtest=ApprovedScenariosTest#shouldReadInputAndOptionsIfFixtureIsParsed+shouldReadEmptyInputIfFixtureHasEmptyCsvFence+shouldWriteReceivedAndFailIfResultDiffers+shouldOverwriteApprovedIfApprovalIsExplicit test` 可单独确认，不改源夹具。
+
+仅在人工确认全部 diff 后，运行 `APPROVE=1 mvn -Dtest=ApprovedScenariosTest test` 更新 `.approved.md`。S3 不运行该命令；S3 夹具期望保持人工评审版本。
+
+现有业务执行路径可先运行 `mvn -Dtest=RequiredHeadersExistingFlowE2ETest test`，再按 [VS Code 单步调试指南](docs/required-headers-by-running-e2e-test.md) 观察文件读取、显式表头映射与业务取值。此测试只用现有 API。
 
 # 3. 故障注入与失败原因
 
@@ -48,6 +52,9 @@
 - 环节 S2 构建入口 · `context-mode: Build tool redirected.` → 直接经 shell 运行 Maven 被上下文模式拦截，未真正执行测试 → 按提示经 `ctx_execute` 执行 Maven 并读取结果。
 - 环节 S2 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱仅允许读取 `.git`，默认权限无法写入索引 → 按授权流程提升本仓库 `git add` 权限后成功暂存。
 - 环节 S2 差异检查 · `trailing whitespace.` → 场景 06、08 的原样 CSV 故意保留表头末尾空格，用于验证空白匹配；汇总文档复制同一输入 → 保留这四处业务输入空格，清除其他文件末尾多余空行。
+- 环节 S3 构建入口 · `context-mode: Build tool redirected.` → shell 中的 Maven 命令被上下文模式拦截，未执行测试 → 改用 `ctx_execute` 执行，确认 Surefire 输出 44 个用例、失败 26、错误 0。
+- 环节 S3 空输入夹具 · 场景 13、19 的 received 把后续 Markdown 标题当作 CSV → 空代码围栏的结束标记紧贴内容起点，原提取器只查找前置换行的结束围栏 → 显式处理空围栏，增加独立自检并重跑两类测试。
+- 环节 S3 暂存提交 · `fatal: Unable to create '.git/index.lock': Operation not permitted` → 沙箱默认只读 `.git`，无法写索引 → 按授权流程提升本仓库 `git add` 权限后暂存成功。
 
 # 5. 与 without 对照
 
@@ -56,3 +63,4 @@
 # 6. 环节与 tag
 
 - S0 克隆与基线：`as-s0-baseline`。
+- S3 Approved Scenarios 红态：`as-s3-red`；下一环节实现必需列表头行为。
