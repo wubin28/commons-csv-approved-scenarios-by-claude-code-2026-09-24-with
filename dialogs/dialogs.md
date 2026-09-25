@@ -439,3 +439,40 @@ spec 已补三道关卡的读法；场景 01、10、12、13、14 的说明已对
 推导依据已写入 [规格第 7 节](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md:64)：Q5/Q6 决定 A 的开关，Q0/Q3 决定 A/B 的表头来源，Q2 决定 C 的旧策略优先，Q1/Q4 决定名称匹配与缺列结果。[decisions.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md) 续写 Q12；场景 01、10、12、13、14 的说明同步标明推导，期望仍为手工推导。
 
 `APPROVE=1` 重生成 [business-facts.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md)：diff **+5/−5**，仅五处业务说明；CSV、配置、路径、期望结果未变。`mvn test`：926 次，失败 0、错误 0、跳过 11。已提交 `docs(s2r): explain acceptance decision tables`；未打 tag，等下一轮评审。
+
+## S2R · 第 6 轮
+
+### 我
+
+【会话守则】
+- 当前目录 = 本仓库根（git）。每次回复我之后，把本轮对话完整追加到 dialogs/dialogs.md 末尾：标题"## S2R · 第 N 轮"，"### 我"原样贴出我的消息，"### Agent"贴出你回复我的全文。
+- 环节结束时一次性 git commit（Conventional Commits，意图清楚），打指定 tag。
+
+【本环节：S2R 评审意见】
+下面是我的评审意见：
+<逐条写：文件/场景编号 → 问题 → 期望的改法；没有意见就写"全部通过">
+
+请在spec文件 @docs/specs/required-headers.md 中的适当位置解释“7. 验收标准”中的“验收条件推导表”中的“A · 功能开关与构建期配置”中表格左侧“条件”那列每一行所对应的当面目录代码库中相应的生产代码中相应的文件名和行号，以便我查验。另外在上述spec文件的合理位置用实例简要解释上述A表中最下面一行“验收”为何能覆盖上面的条件和动作，比如C2为何能覆盖A2。
+
+请：
+1. 逐条落实到 spec、夹具、decisions.md（新决定按问题编号续写）；夹具里的期望结果仍然手工推导。
+2. 用 APPROVE=1 重新生成 docs/business-facts.md，并把它的 diff 摘要给我看。
+3. 如果我写的是"全部通过"：提交并打 tag as-s2-spec-approved。否则提交修改（不打 tag），然后停下等我下一轮评审。
+
+### Agent
+
+先核对 A 表五个条件在当前生产代码中的对应入口和行号，并区分现有行为与待实现校验。然后补充 A1–A7 的验收覆盖例子，更新夹具说明与 Q13，重新生成业务事实并验证。
+
+发现工作区已有未提交的 spec 排版改动，以及未追踪的 `docs/.DS_Store`。我会保留这些现有改动，在其上补审阅说明；`.DS_Store` 不纳入提交。当前生产代码没有 `setRequiredHeaders`，文档会明确标出可核对的现有入口和待实现的判定。
+
+A 表五个条件已逐行接到源码入口，并注明新增校验尚无生产代码可指。覆盖例子已区分“构建期契约 C2”和“C 表分支 C2”；场景 01、10、14、15 的说明也已对应 A6、A7、A1。接下来生成业务事实、检查 diff。
+
+生成命令被 Apache RAT 拦下：工作区原有 spec 改动移除了 ASF 许可证头，测试尚未运行。我会恢复该文件必需的许可证头，再重跑 `APPROVE=1`。其余已有排版改动保留。
+
+`APPROVE=1` 生成成功：`business-facts.md` 为 **+4/−4**，只改场景 01、10、14、15 的业务说明；输入、配置、路径和期望结果未变。全量 `mvn test` 通过（926 次，失败 0、错误 0、跳过 11）。现在记录本轮对话并提交；本轮不打 tag。
+
+[规格 A 表源码对照](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/required-headers.md:86) 已逐行列出五个条件对应的现有生产代码文件和行号，并注明 `setRequiredHeaders` 尚未实现，这些行号是现有入口，不是新增校验的实现位置。
+
+“验收”指验证每列的**条件和动作**。例如 A2 配置重复必需名 `currency,currency`：7.2 的**构建期契约 C2**规划断言 `Builder#get()` 拒绝；它不同于 C 表的“通过表头校验”分支 C2。A3–A5 对应契约 C3；A1、A6、A7 的业务路径已在 [夹具说明](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/business-facts.md)举例。[decisions.md](/Users/binwu/OOR/my-lab/commons-csv-approved-scenarios-by-claude-code-2026-09-24/with/docs/specs/decisions.md:42) 续写 Q13；夹具期望仍为手工推导。
+
+`APPROVE=1` 重生成 `docs/business-facts.md`：diff **+4/−4**，仅场景 01、10、14、15 的业务说明；CSV、配置、路径、期望结果未变。`mvn test`：926 次，失败 0、错误 0、跳过 11。已提交 `docs(s2r): trace A-table conditions to source and acceptance`；未打 tag。未追踪的 `docs/.DS_Store` 未纳入提交。
